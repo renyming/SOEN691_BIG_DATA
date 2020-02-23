@@ -3,31 +3,27 @@ from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
 
-Test_Instance = ['0', 'tcp', 'finger', 'S0', '0', '0', '0', '0', '0', '0', '0', '0',
-                 '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '39', '12', '1',
-                 '1', '0', '0', '0.31', '0.1', '0', '255', '52', '0.2', '0.04', '0',
-                 '0', '1', '1', '0', '0', 'anomaly']
+import KNN as real_time_KNN
 
+def main(sc , pool):
 
-
-
-def main():
-    sc = SparkContext(appName="PysparkStreaming")
     ssc = StreamingContext(sc, 3)   #Streaming will execute in each 3 seconds
     #lines = ssc.textFileStream("hdfs://localhost:9000/input_dir")
 
     lines = ssc.textFileStream("./input_dir").map(lambda x: list(reader(StringIO(x))))\
                                              .map(lambda x: x[0])
 
-    lines.pprint()
+
+    test = lines.map(lambda  x : (real_time_KNN.KNN(pool , 50 , x) , x[41]))
+    test.pprint()
+
+    #lines.pprint()
     ssc.start()
     ssc.awaitTermination()
 
-
-def calculate_distance(v1 , v2):
-
-    return 0
-
-
 if __name__ == "__main__":
-    main()
+
+    sc = SparkContext(appName="PysparkStreaming")
+    KNN_pool = real_time_KNN.init_KNN('./source_dir/Train.csv', sc, 200)
+
+    main(sc , KNN_pool)

@@ -49,7 +49,7 @@ def clean():
 
 start()
 
-time.sleep(10)
+time.sleep(100)
 
 clean()
 
