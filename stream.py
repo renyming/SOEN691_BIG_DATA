@@ -51,8 +51,5 @@ clean()
 
 start()
 
-time.sleep(100)
-
-
 
 
