@@ -47,12 +47,9 @@ def clean():
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
-start()
-
-time.sleep(100)
-
 clean()
 
+start()
 
 
 
