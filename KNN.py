@@ -42,5 +42,5 @@ def KNN(KNN_pool, k, instance):
     for i in range (k):
         if (vote_pool[i][1] == "normal") : votes_for_normal += 1
         else : votes_for_anomaly += 1
-    if(votes_for_normal >= votes_for_anomaly) : return 0
-    else : return 1
+    if(votes_for_normal >= votes_for_anomaly) : return "normal"
+    else : return "anomaly"
