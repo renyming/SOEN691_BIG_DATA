@@ -38,6 +38,10 @@ def get_results(predictions_labels):
 
     return true_pos.union(false_pos.union(true_neg.union(false_neg)))
 
+def saveCoord(rdd):
+
+    rdd.foreach(lambda rec: open("myoutput.txt", "a").write(rec[0] + ":" +rec[1] + '\n'))
+
 
 def RT_KNN(sc , pool):
 
@@ -50,10 +54,19 @@ def RT_KNN(sc , pool):
 
     # make predictions
     predictions_labels = lines.map(
-        lambda x : (real_time_KNN.KNN(pool, 10, x), x[-1]))
+        lambda x: (real_time_KNN.KNN(pool, 10, x), x[-1]))
 
-    result = get_results(predictions_labels)
-    result.pprint()
+    #predictions_labels.foreachRDD(lambda x: test_list.append(x))
+    #result = \
+        #predictions_labels.map(lambda x: ("correct ", 1) if x[0] == x[1] else ("error", 1))\
+                              # .reduceByKey(lambda a, b: a + b)
+
+    predictions_labels.foreachRDD(saveCoord)
+    predictions_labels.pprint()
+    #result.pprint()
+
+    #result = get_results(predictions_labels)
+    #result.pprint()
 
     # print the first 10 lines
     # test.pprint()
@@ -70,5 +83,5 @@ if __name__ == "__main__":
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
 
     KNN_pool = real_time_KNN.init_KNN('./source_dir/Train.csv', sc, 100)
+    RT_KNN(sc, KNN_pool)
 
-    RT_KNN(sc , KNN_pool)
