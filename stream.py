@@ -16,14 +16,14 @@ def start():
 
     start_index = 0
 
-    for i in range(20):
+    for i in range(40):
 
         with open('./input_dir/raw_data' + str(i) + '.csv', 'w', newline='') as file:
 
             csv_writer = csv.writer(file)
             #ri = random.randint(40,50)
 
-            ri = 1000
+            ri = 500
 
             for j in range(ri):
 
@@ -47,12 +47,9 @@ def clean():
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
-start()
-
-time.sleep(10)
-
 clean()
 
+start()
 
 
 

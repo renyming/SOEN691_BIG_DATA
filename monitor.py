@@ -1,33 +1,74 @@
-from pyspark import SparkContext
+import pyspark
 from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
 
-Test_Instance = ['0', 'tcp', 'finger', 'S0', '0', '0', '0', '0', '0', '0', '0', '0',
-                 '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '39', '12', '1',
-                 '1', '0', '0', '0.31', '0.1', '0', '255', '52', '0.2', '0.04', '0',
-                 '0', '1', '1', '0', '0', 'anomaly']
+import KNN as real_time_KNN
 
-def main():
-    sc = SparkContext(appName="PysparkStreaming")
-    ssc = StreamingContext(sc, 3)   #Streaming will execute in each 3 seconds
-    #lines = ssc.textFileStream("hdfs://localhost:9000/input_dir")
-    lines = ssc.textFileStream("./input_dir").map(lambda x: list(reader(StringIO(x))))\
-                                             .map(lambda x: x[0])
 
-    lines.pprint()
+def get_results(predictions_labels):
+    # 4 conditions
+    #     normal:   positive
+    #     abnormal: negative
+    true_pos = predictions_labels \
+        .filter(lambda x: x[0] == x[1] and x[0] == 'normal') \
+        .map(lambda x: ('True positive', 1)) \
+        .reduceByKey(lambda x, y: x + y)
+    false_pos = predictions_labels \
+        .filter(lambda x: x[0] != x[1] and x[0] == 'normal') \
+        .map(lambda x: ('False positive', 1)) \
+        .reduceByKey(lambda x, y: x + y)
+    true_neg = predictions_labels \
+        .filter(lambda x: x[0] == x[1] and x[0] == 'anomaly') \
+        .map(lambda x: ('True negative', 1)) \
+        .reduceByKey(lambda x, y: x + y)
+    false_neg = predictions_labels \
+        .filter(lambda x: x[0] != x[1] and x[0] == 'anomaly') \
+        .map(lambda x: ('False negative', 1)) \
+        .reduceByKey(lambda x, y: x + y)
+
+    if true_pos.count() == 0:
+        true_pos = sc.parallelize(('true positive', 0))
+    if false_pos.count() == 0:
+        false_pos = sc.parallelize(('false positive', 0))
+    if true_neg.count() == 0:
+        true_neg = sc.parallelize(('true negative', 0))
+    if false_neg.count() == 0:
+        false_neg = sc.parallelize(('false negative', 0))
+
+    return true_pos.union(false_pos.union(true_neg.union(false_neg)))
+
+
+def RT_KNN(sc , pool):
+
+    ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
+    # read on Hadoop
+    # lines = ssc.textFileStream("hdfs://localhost:9000/input_dir")
+
+    lines = ssc.textFileStream("./input_dir").map(lambda x:
+        list(reader(StringIO(x)))[0])
+
+    # make predictions
+    predictions_labels = lines.map(
+        lambda x : (real_time_KNN.KNN(pool, 10, x), x[-1]))
+
+    result = get_results(predictions_labels)
+    result.pprint()
+
+    # print the first 10 lines
+    # test.pprint()
+
+    # start StreamingContext
     ssc.start()
     ssc.awaitTermination()
 
 
-def calculate_distance(v1 , v2):
-
-
-
-    return 0
-
-
-
-
 if __name__ == "__main__":
-    main()
+
+    # spark initialization
+    conf = pyspark.SparkConf().setAppName("kmeans").setMaster("local[2]")
+    sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
+
+    KNN_pool = real_time_KNN.init_KNN('./source_dir/Train.csv', sc, 100)
+
+    RT_KNN(sc , KNN_pool)
