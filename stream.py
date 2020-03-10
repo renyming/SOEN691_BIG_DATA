@@ -49,7 +49,7 @@ def clean():
 
 clean()
 
-start()
+#start()
 
 
 

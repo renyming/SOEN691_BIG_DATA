@@ -3,8 +3,7 @@ from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
 
-import KNN as real_time_KNN
-
+from KNN import Knn
 
 def get_results(predictions_labels):
     # 4 conditions
@@ -42,8 +41,11 @@ def saveCoord(rdd):
 
     rdd.foreach(lambda rec: open("myoutput.txt", "a").write(rec[0] + ":" +rec[1] + '\n'))
 
+def updatePool(rdd):
 
-def RT_KNN(sc , pool):
+    rdd.foreach(lambda rec: k1.simple_update_pool(rec))
+
+def RT_KNN(sc):
 
     ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
     # read on Hadoop
@@ -54,22 +56,12 @@ def RT_KNN(sc , pool):
 
     # make predictions
     predictions_labels = lines.map(
-        lambda x: (real_time_KNN.KNN(pool, 10, x), x[-1]))
-
-    #predictions_labels.foreachRDD(lambda x: test_list.append(x))
-    #result = \
-        #predictions_labels.map(lambda x: ("correct ", 1) if x[0] == x[1] else ("error", 1))\
-                              # .reduceByKey(lambda a, b: a + b)
+        lambda x: (k1.KNN(10,x), x[-1]))
 
     predictions_labels.foreachRDD(saveCoord)
     predictions_labels.pprint()
-    #result.pprint()
 
-    #result = get_results(predictions_labels)
-    #result.pprint()
-
-    # print the first 10 lines
-    # test.pprint()
+    lines.foreachRDD(updatePool)
 
     # start StreamingContext
     ssc.start()
@@ -79,9 +71,9 @@ def RT_KNN(sc , pool):
 if __name__ == "__main__":
 
     # spark initialization
-    conf = pyspark.SparkConf().setAppName("kmeans").setMaster("local[2]")
+    conf = pyspark.SparkConf().setMaster("local[2]")
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
+    global k1
 
-    KNN_pool = real_time_KNN.init_KNN('./source_dir/Train.csv', sc, 100)
-    RT_KNN(sc, KNN_pool)
-
+    k1 = Knn('./source_dir/Train.csv', sc, 500)
+    RT_KNN(sc)
