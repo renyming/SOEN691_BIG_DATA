@@ -3,7 +3,7 @@ from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
 
-from KNN import Knn
+import KNN as Knn
 
 def get_results(predictions_labels):
     # 4 conditions
@@ -41,39 +41,59 @@ def saveCoord(rdd):
 
     rdd.foreach(lambda rec: open("myoutput.txt", "a").write(rec[0] + ":" +rec[1] + '\n'))
 
-def updatePool(rdd):
+def saveCoord2(rdd):
 
-    rdd.foreach(lambda rec: k1.simple_update_pool(rec))
+    rdd.foreach(lambda rec: open("myoutput2.txt", "a").write(str(rec) + '\n'))
 
-def RT_KNN(sc):
 
-    ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
+def main(ssc , pool):
+
     # read on Hadoop
     # lines = ssc.textFileStream("hdfs://localhost:9000/input_dir")
 
-    lines = ssc.textFileStream("./input_dir").map(lambda x:
-        list(reader(StringIO(x)))[0])
+    lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
+
+    pool = lines
 
     # make predictions
-    predictions_labels = lines.map(
-        lambda x: (k1.KNN(10,x), x[-1]))
+    predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
 
-    predictions_labels.foreachRDD(saveCoord)
-    predictions_labels.pprint()
+    #predictions_labels.foreachRDD(saveCoord)
+    #predictions_labels.pprint()
+    #pool.pprint()
+    test = withBroadCast(ssc, lines)
+    test.pprint()
 
-    lines.foreachRDD(updatePool)
 
     # start StreamingContext
     ssc.start()
     ssc.awaitTermination()
 
 
+def updateInput(inputRDD, broadCastVar):
+
+    update_Rdd = inputRDD.map(lambda x : broadCastVar.value)
+
+    return update_Rdd
+
+def withBroadCast(ssc, inputRDD):
+
+    global refData
+    refData += 1
+
+    broadcast = ssc.sparkContext.broadcast(refData)
+    update_RDD = updateInput(inputRDD, broadcast)
+
+    return update_RDD
+
 if __name__ == "__main__":
 
     # spark initialization
     conf = pyspark.SparkConf().setMaster("local[2]")
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
-    global k1
+    ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
 
-    k1 = Knn('./source_dir/Train.csv', sc, 500)
-    RT_KNN(sc)
+    KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
+
+    refData = 5
+    main(ssc , KNN_pool)
