@@ -41,6 +41,9 @@ def get_results(predictions_labels):
     return true_pos.union(false_pos.union(true_neg.union(false_neg)))
 
 
+def functions_test(rdds):
+    rdds.foreach(lambda x: predict(x))
+
 def RT_KNN(sc , knn_pool):
 
     ssc = StreamingContext(sc, 3)  # Streaming will execute in each 3 seconds
@@ -54,9 +57,12 @@ def RT_KNN(sc , knn_pool):
     # knn_results.pprint()
 
     # make predictions on MCNN
-    predictions_mcnn = lines.map(lambda x: (predict(x), x[-1]))
-    mcnn_results = get_results(predictions_mcnn)
-    mcnn_results.pprint()
+    # predictions_mcnn = lines.map(lambda x: (predict(x), x[-1]))
+    # mcnn_results = get_results(predictions_mcnn)
+    # mcnn_results.pprint()
+
+    lines.foreachRDD(functions_test)
+    lines.pprint()
 
 
     # start StreamingContext
@@ -75,3 +81,5 @@ if __name__ == "__main__":
 
     # run streaming
     RT_KNN(sc , KNN_pool)
+
+
