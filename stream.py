@@ -1,7 +1,7 @@
 import csv
 import time
 import os, shutil
-import random
+
 
 def start():
 
@@ -31,7 +31,7 @@ def start():
 
         start_index += ri
 
-        time.sleep(3)
+        time.sleep(6)
 
 def clean():
 

@@ -4,6 +4,8 @@ from io import StringIO
 from csv import reader
 
 import KNN as real_time_KNN
+from MCNN import predict
+from MCNN import init_mcnn_pool
 
 
 def get_results(predictions_labels):
@@ -39,24 +41,24 @@ def get_results(predictions_labels):
     return true_pos.union(false_pos.union(true_neg.union(false_neg)))
 
 
-def RT_KNN(sc , pool):
+def RT_KNN(sc , knn_pool):
 
-    ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
-    # read on Hadoop
-    # lines = ssc.textFileStream("hdfs://localhost:9000/input_dir")
+    ssc = StreamingContext(sc, 3)  # Streaming will execute in each 3 seconds
 
-    lines = ssc.textFileStream("./input_dir").map(lambda x:
-        list(reader(StringIO(x)))[0])
+    # read changed files under "input_dir" folder
+    lines = ssc.textFileStream("./input_dir").map(lambda x: list(reader(StringIO(x)))[0])
 
-    # make predictions
-    predictions_labels = lines.map(
-        lambda x : (real_time_KNN.KNN(pool, 10, x), x[-1]))
+    # make predictions on KNN
+    # predictions_knn = lines.map(lambda x: (real_time_KNN.KNN(knn_pool, 10, x), x[-1]))
+    # knn_results = get_results(predictions_knn)
+    # knn_results.pprint()
 
-    result = get_results(predictions_labels)
-    result.pprint()
+    # make predictions on MCNN
+    init_mcnn_pool('./source_dir/Train.csv', sc)
+    predictions_mcnn = lines.map(lambda x: (predict(x), x[-1]))
+    mcnn_results = get_results(predictions_mcnn)
+    mcnn_results.pprint()
 
-    # print the first 10 lines
-    # test.pprint()
 
     # start StreamingContext
     ssc.start()
@@ -71,4 +73,5 @@ if __name__ == "__main__":
 
     KNN_pool = real_time_KNN.init_KNN('./source_dir/Train.csv', sc, 100)
 
+    # run streaming
     RT_KNN(sc , KNN_pool)
