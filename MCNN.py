@@ -75,12 +75,10 @@ class MC_NN:
 
             self.pool.append(mc)
 
-        clean_mc_folder()
-
     def euclidean_distance(self, v1, v2):
         distance = 0
         for i in range(len(v1)):
-            distance += (float(v1[i]) - float(v2[i])) ** 2
+            distance += (v1[i] - v2[i]) ** 2
         return distance
 
     def find_true_nearest_mc(self, instance):
@@ -109,8 +107,7 @@ class MC_NN:
                 min_distance = distance
                 min_mc = mc
 
-        # prediction and true label
-    #     print(min_mc.cl, ",", true_label)
+        prediction = min_mc.cl
 
         # update micro clusters and save on disk
         if min_mc.cl == true_label:
@@ -129,7 +126,7 @@ class MC_NN:
             true_mc.epsilon += 1
             min_mc.epsilon += 1
 
-            # check and split
+            # TODO: check and split
             # ...
 
         # write updated mcs onto disk
@@ -147,7 +144,7 @@ class MC_NN:
             else:
                 print("???????? non-reachable !!!!!!!!!!")
 
-        print(os.listdir(mc_folder))
+        return prediction
 
 
 def init_mcnn_pool(data_file, sc):
@@ -186,6 +183,10 @@ def init_mcnn_pool(data_file, sc):
 def predict(instance):
     mcnn = MC_NN(theta=20)
 
-    mcnn.predict_and_update_mcs(instance, instance[-1])
+    prediction = mcnn.predict_and_update_mcs(instance, instance[-1])
 
-    return "normal"
+    # TODO: after the previous RDD deletes the files, the next RDD may fail to
+    #       read the mc files.
+    # clean_mc_folder()
+
+    return prediction

@@ -54,7 +54,6 @@ def RT_KNN(sc , knn_pool):
     # knn_results.pprint()
 
     # make predictions on MCNN
-    init_mcnn_pool('./source_dir/Train.csv', sc)
     predictions_mcnn = lines.map(lambda x: (predict(x), x[-1]))
     mcnn_results = get_results(predictions_mcnn)
     mcnn_results.pprint()
@@ -72,6 +71,7 @@ if __name__ == "__main__":
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
 
     KNN_pool = real_time_KNN.init_KNN('./source_dir/Train.csv', sc, 100)
+    init_mcnn_pool('./source_dir/Train.csv', sc)
 
     # run streaming
     RT_KNN(sc , KNN_pool)
