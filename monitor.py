@@ -4,6 +4,8 @@ from io import StringIO
 from csv import reader
 
 import KNN as Knn
+from MCNN import predict
+from MCNN import init_mcnn_pool
 
 def get_results(predictions_labels):
     # 4 conditions
@@ -45,6 +47,10 @@ def saveCoord2(rdd):
 
     rdd.foreach(lambda rec: open("myoutput2.txt", "a").write(str(rec) + '\n'))
 
+def MCNN_predict(rdds):
+
+    rdds.foreach(lambda x: predict(x))
+
 
 def main(ssc , pool):
 
@@ -53,38 +59,21 @@ def main(ssc , pool):
 
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
 
-    pool = lines
 
     # make predictions
-    predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
+    #predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
 
     #predictions_labels.foreachRDD(saveCoord)
     #predictions_labels.pprint()
     #pool.pprint()
-    test = withBroadCast(ssc, lines)
-    test.pprint()
-
 
     # start StreamingContext
+    lines.pprint()
+    lines.foreachRDD(MCNN_predict)
+
     ssc.start()
     ssc.awaitTermination()
 
-
-def updateInput(inputRDD, broadCastVar):
-
-    update_Rdd = inputRDD.map(lambda x : broadCastVar.value)
-
-    return update_Rdd
-
-def withBroadCast(ssc, inputRDD):
-
-    global refData
-    refData += 1
-
-    broadcast = ssc.sparkContext.broadcast(refData)
-    update_RDD = updateInput(inputRDD, broadcast)
-
-    return update_RDD
 
 if __name__ == "__main__":
 
@@ -95,5 +84,5 @@ if __name__ == "__main__":
 
     KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
 
-    refData = 5
+    init_mcnn_pool('./source_dir/Train.csv', sc)
     main(ssc , KNN_pool)
