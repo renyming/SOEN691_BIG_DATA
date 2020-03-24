@@ -39,13 +39,16 @@ def get_results(predictions_labels):
 
     return true_pos.union(false_pos.union(true_neg.union(false_neg)))
 
+
 def saveCoord(rdd):
 
     rdd.foreach(lambda rec: open("myoutput.txt", "a").write(rec[0] + ":" +rec[1] + '\n'))
 
+
 def saveCoord2(rdd):
 
     rdd.foreach(lambda rec: open("myoutput2.txt", "a").write(str(rec) + '\n'))
+
 
 def MCNN_predict(rdds):
 
@@ -79,9 +82,7 @@ if __name__ == "__main__":
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
     ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
 
-
     KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
-
     init_mcnn_pool('./source_dir/Train.csv', sc)
 
     main(ssc , KNN_pool)
