@@ -9,8 +9,10 @@ class MC:
         self.epsilon = 0            # error counter
         self.theta = theta          # upper threshold
         self.centroid = None        # centroid
+
         self.cf_all = []            # cluster feature (all, used for writing) #may not used this
         self.cf = []                # cluster feature (numeric only)          #and this
+
         self.cf1_x = None           # sum of feature values
         self.cf1_t = None           # sum of time stamps
         self.cf2_x = None           # sum of squares of attributes
@@ -21,6 +23,7 @@ class MC:
 
         #new
         self.variance_x = []          #variance vector for each attribute
+
 
     def print(self):
         print("epsilon   = " + str(self.epsilon) + "\n" + \
@@ -34,3 +37,4 @@ class MC:
         print("features sum  = ", self.cf1_x)
         print("timestamp sum = ", self.cf1_t)
         print("features soq  = ", self.cf2_x)
+

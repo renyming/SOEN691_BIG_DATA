@@ -12,21 +12,27 @@ from mcnnmc import MC
 '''
 改动的地方:
 1. 每个mc文件头的信息：
-    1) epsilon: error counter
-    2) n: number of instances
-    3) centroid: centroid
-    4) CF2_X row 4 for the split
-    
-2. 每个rdd需要读：epsilon, n, centroid
-    1) 根据centroid算距离
-    2) 根据centroid, n, instance更新centroid and n
-    3) 需不需要存每个点的数据 (???)
-    4) Split (???) : split largest attribute 
-    5) 如果用foreachRDD，需要把(prediction, label, time) 存下来
-    6) 最后等所有(prediction, label, time)都存下来后，再写另一个py文件做evaluation
-
-
+    1) epsilon  : error counter
+    2) n        : number of instances
+    3) centroid : centroid
+    4) CF2_x    : sum of the squares of the attributes in CF1_x
+2. 每个rdd需要读：epsilon, n, centroid, CF2_x
+    1) 先根据 centroid, n 算出 CF1_x
+    2) 在根据 CF1_x, CF2_x 算出 vairiance
+    3) 根据 centroid 算距离
+    4) 不需要存每个点的数据
+    5) Split : 找到最大的 variance 中的下标，先更新 CF1_x, 再根据 CF1_x 算出两个新的 
+               centroid 写回去
+    5) 如果用 foreachRDD，需要存下来:
+          epsilon
+          n 
+          centroid (CF1_x / n)
+          CF2_x
+    6) 需要在 MCNN/predict 方法里把 (prediction, label, time) 写到一个新的文件
+    7) 最后等所有 (prediction, label, time) 都存下来后，再写另一个py文件做 evaluation
 '''
+
+
 mc_folder = './mcnn_mcs'
 
 
@@ -50,6 +56,7 @@ def clean_mc_folder():
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
+
 class MC_NN:
 
     def __init__(self, theta):
@@ -63,7 +70,9 @@ class MC_NN:
         read all centroid files into a self.pool
         :return:
         '''
+        
         mc_files = [f for f in os.listdir(mc_folder) if f.endswith('.csv')]
+
 
         for file in mc_files:
             mc = MC(self.theta)
@@ -107,8 +116,10 @@ class MC_NN:
 
     def predict_and_update_mcs(self, instance, true_label):
         # predict
+
         features = [float(attr) for attr in instance if is_number(attr)]
         features_np = np.array(features)
+
 
         min_distance = float('inf')
         min_mc = None
@@ -123,6 +134,7 @@ class MC_NN:
         # update micro clusters and save on disk
         if min_mc.cl == true_label:
             # scenario 1:
+
 
             #update n
             min_mc.n = min_mc.n + 1
@@ -139,6 +151,7 @@ class MC_NN:
                 min_mc.epsilon -= 1
         else:
             # scenario 2:
+            
             # need to find the true mc
             true_mc = self.find_true_nearest_mc(instance)
 
@@ -156,6 +169,7 @@ class MC_NN:
             temp_features = features_np * features_np
             true_mc.cf2_x = (np.add(true_mc.cf2_x, temp_features)).tolist()
 
+
             # TODO: check and split
             # ...
 
@@ -164,6 +178,7 @@ class MC_NN:
             if mc.cl == 'normal':
                 with open(join(mc_folder, 'normal_mc_1.csv'), 'w', newline='') as f:
                     csv_writer = csv.writer(f)
+
                     csv_writer.writerow([mc.epsilon]) #write new epsilon
                     csv_writer.writerow([mc.n])  # write new count
                     csv_writer.writerow(mc.centroid)  # write new centroids
@@ -177,8 +192,8 @@ class MC_NN:
                     csv_writer.writerow(mc.centroid)  # write new centroids
                     csv_writer.writerow(mc.cf2_x)  # write new CF2_X
 
-            else:
-                print("???????? non-reachable !!!!!!!!!!")
+
+
 
         return prediction
 
@@ -203,6 +218,7 @@ def init_mcnn_pool(data_file, sc):
 
         if rand[-1] == 'normal' and normal is None:
             normal = rand
+
             cf1_x_normal = [x for x in normal if is_number(x)]
             cf2_x_normal = [float(x) * float(y) for x, y in zip(cf1_x_normal, cf1_x_normal)]
 
@@ -226,6 +242,7 @@ def init_mcnn_pool(data_file, sc):
         csv_writer.writerow(cf2_x_anomaly)
 
 
+
 def predict(instance):
     mcnn = MC_NN(theta=20)
 
@@ -233,6 +250,8 @@ def predict(instance):
 
     # TODO: after the previous RDD deletes the files, the next RDD may fail to
     #       read the mc files.
+
     #clean_mc_folder()
+
 
     return None

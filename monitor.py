@@ -1,11 +1,14 @@
 import pyspark
+import KNN as real_time_KNN
 from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
 
+
 import KNN as Knn
 from MCNN import predict
 from MCNN import init_mcnn_pool
+
 
 def get_results(predictions_labels):
     # 4 conditions
@@ -67,6 +70,7 @@ def main(ssc , pool):
     #predictions_labels.pprint()
     #pool.pprint()
 
+
     # start StreamingContext
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
@@ -76,13 +80,14 @@ def main(ssc , pool):
 
 
 if __name__ == "__main__":
-
     # spark initialization
     conf = pyspark.SparkConf().setMaster("local[2]")
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
     ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
 
+
     KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
 
     init_mcnn_pool('./source_dir/Train.csv', sc)
     main(ssc , KNN_pool)
+
