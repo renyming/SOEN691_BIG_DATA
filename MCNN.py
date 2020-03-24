@@ -192,9 +192,6 @@ class MC_NN:
                     csv_writer.writerow(mc.centroid)  # write new centroids
                     csv_writer.writerow(mc.cf2_x)  # write new CF2_X
 
-
-
-
         return prediction
 
 
@@ -213,12 +210,13 @@ def init_mcnn_pool(data_file, sc):
 
     normal = None
     anomaly = None
+    cf2_x_normal = None
+    cf2_x_anomaly = None
     while normal is None or anomaly is None:
         rand = data.takeSample(withReplacement=False, num=1, seed=random.randint(0, 100))[0]
 
         if rand[-1] == 'normal' and normal is None:
             normal = rand
-
             cf1_x_normal = [x for x in normal if is_number(x)]
             cf2_x_normal = [float(x) * float(y) for x, y in zip(cf1_x_normal, cf1_x_normal)]
 
@@ -242,7 +240,6 @@ def init_mcnn_pool(data_file, sc):
         csv_writer.writerow(cf2_x_anomaly)
 
 
-
 def predict(instance):
     mcnn = MC_NN(theta=20)
 
@@ -252,6 +249,5 @@ def predict(instance):
     #       read the mc files.
 
     #clean_mc_folder()
-
 
     return None

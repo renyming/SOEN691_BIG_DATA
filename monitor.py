@@ -1,11 +1,8 @@
 import pyspark
-import KNN as real_time_KNN
+import KNN as Knn
 from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
-
-
-import KNN as Knn
 from MCNN import predict
 from MCNN import init_mcnn_pool
 
@@ -62,19 +59,16 @@ def main(ssc , pool):
 
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
 
-
     # make predictions
     #predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
-
     #predictions_labels.foreachRDD(saveCoord)
     #predictions_labels.pprint()
     #pool.pprint()
 
-
-    # start StreamingContext
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
 
+    # start StreamingContext
     ssc.start()
     ssc.awaitTermination()
 
@@ -89,5 +83,6 @@ if __name__ == "__main__":
     KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
 
     init_mcnn_pool('./source_dir/Train.csv', sc)
+
     main(ssc , KNN_pool)
 
