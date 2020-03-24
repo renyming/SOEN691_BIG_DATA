@@ -1,5 +1,3 @@
-# Spark initialization
-import pyspark
 from io import StringIO
 from csv import reader
 from collections import deque
@@ -22,7 +20,6 @@ def distance(v1, v2):
     for i in range(len(v1)):
         if v1[i].isnumeric():
             dis += (float(v1[i]) - float(v2[i])) ** 2
-
     return dis
 
 

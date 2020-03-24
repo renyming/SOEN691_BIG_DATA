@@ -1,9 +1,10 @@
 import pyspark
+import KNN as real_time_KNN
 from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
-
-import KNN as real_time_KNN
+from MCNN import predict
+from MCNN import init_mcnn_pool
 
 
 def get_results(predictions_labels):
@@ -39,23 +40,40 @@ def get_results(predictions_labels):
     return true_pos.union(false_pos.union(true_neg.union(false_neg)))
 
 
-def RT_KNN(sc, pool):
-    ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
-    # read on Hadoop
-    # lines = ssc.textFileStream("hdfs://localhost:9000/input_dir")
+def saveCoord(rdd):
 
-    lines = ssc.textFileStream("./input_dir").map(lambda x:
-                                                  list(reader(StringIO(x)))[0])
+    rdd.foreach(lambda rec: open("myoutput.txt", "a").write(rec[0] + ":" +rec[1] + '\n'))
 
-    # make predictions
-    predictions_labels = lines.map(
-        lambda x: (real_time_KNN.KNN(pool, 10, x), x[-1]))
 
-    result = get_results(predictions_labels)
-    result.pprint()
+def saveCoord2(rdd):
 
-    # print the first 10 lines
-    # test.pprint()
+    rdd.foreach(lambda rec: open("myoutput2.txt", "a").write(str(rec) + '\n'))
+
+
+def MCNN_predict(rdds):
+
+    rdds.foreach(lambda x: predict(x))
+
+
+def main(ssc , pool):
+
+
+    # read changed files under "input_dir" folder
+    lines = ssc.textFileStream("./input_dir").map(lambda x: list(reader(StringIO(x)))[0])
+
+    # make predictions on KNN
+    # predictions_knn = lines.map(lambda x: (real_time_KNN.KNN(pool, 10, x), x[-1]))
+    # knn_results = get_results(predictions_knn)
+    # knn_results.pprint()
+
+    # make predictions on MCNN
+    # predictions_mcnn = lines.map(lambda x: (predict(x), x[-1]))
+    # mcnn_results = get_results(predictions_mcnn)
+    # mcnn_results.pprint()
+
+    lines.foreachRDD(MCNN_predict)
+    lines.pprint()
+
 
     # start StreamingContext
     ssc.start()
@@ -64,9 +82,14 @@ def RT_KNN(sc, pool):
 
 if __name__ == "__main__":
     # spark initialization
-    conf = pyspark.SparkConf().setAppName("kmeans").setMaster("local[2]")
+    conf = pyspark.SparkConf().setMaster("local[2]")
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
+    ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
 
     KNN_pool = real_time_KNN.init_KNN('./source_dir/Train.csv', sc, 100)
+    init_mcnn_pool('./source_dir/Train.csv', sc)
 
-    RT_KNN(sc, KNN_pool)
+    # run streaming
+    main(ssc, KNN_pool)
+
+    
