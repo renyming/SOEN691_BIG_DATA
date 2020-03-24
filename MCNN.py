@@ -130,7 +130,7 @@ class MC_NN:
             # min_mc.cf_all.append(instance)
 
             min_mc.n += 1
-            min_mc.centroid = (np.add(np.array(min_mc.centroid) * (min_mc.n - 1), features) / min_mc.n).tolist()
+            min_mc.centroid = ((np.array(min_mc.centroid) * (min_mc.n - 1) + features) / min_mc.n).tolist()
 
             if min_mc.epsilon > 0:
                 min_mc.epsilon -= 1
@@ -141,7 +141,7 @@ class MC_NN:
             true_mc = self.find_true_nearest_mc(instance)
 
             true_mc.n += 1
-            true_mc.centroid = (np.add(np.array(true_mc.centroid) * (true_mc.n - 1), features) / true_mc.n).tolist()
+            true_mc.centroid = ((np.array(true_mc.centroid) * (true_mc.n - 1) + features) / true_mc.n).tolist()
 
             true_mc.epsilon += 1
             min_mc.epsilon += 1
