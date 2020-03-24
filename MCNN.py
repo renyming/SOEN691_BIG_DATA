@@ -8,6 +8,7 @@ from os.path import join
 from csv import reader
 from mcnnmc import MC
 
+
 '''
 改动的地方:
 1. 每个mc文件头的信息：
@@ -33,6 +34,7 @@ from mcnnmc import MC
 
 
 mc_folder = './mcnn_mcs'
+
 
 # helper function
 def is_number(string):
@@ -68,7 +70,9 @@ class MC_NN:
         read all centroid files into a self.pool
         :return:
         '''
-        mc_files = [f for f in os.listdir('mcnn_mcs') if f.endswith('.csv')]
+        
+        mc_files = [f for f in os.listdir(mc_folder) if f.endswith('.csv')]
+
 
         for file in mc_files:
             mc = MC(self.theta)
@@ -80,13 +84,13 @@ class MC_NN:
             with open(join(mc_folder, file), 'r') as f:
                 lines = f.read().splitlines()
 
+                #the first line is epsilon (for convention)
                 mc.epsilon = int(lines[0])
-                mc.n = int(lines[1])
-                mc.centroid = [float(x) for x in lines[2].split(',')]
-                # mc.cf2_x = [float(x) for x in lines[3].split(',')]
+                mc.n = int(lines[1]) #count
+                mc.centroid = [float(x) for x in lines[2].split(',') if is_number(x)] #centroids only consider the numeric number now
+                mc.cf2_x = [float(x) for x in lines[3].split(',')]
 
-                # the following elements are instances in the mc
-            #     mc.cf_all = [[x for x in line.split(',')] for line in lines[1:]]
+            mc.cf1_x = mc.centroid * mc.n #The sum of the feature is the avarage centroid * n
 
             self.pool.append(mc)
 
@@ -112,7 +116,10 @@ class MC_NN:
 
     def predict_and_update_mcs(self, instance, true_label):
         # predict
-        features = np.array([float(attr) for attr in instance if is_number(attr)])
+
+        features = [float(attr) for attr in instance if is_number(attr)]
+        features_np = np.array(features)
+
 
         min_distance = float('inf')
         min_mc = None
@@ -127,24 +134,41 @@ class MC_NN:
         # update micro clusters and save on disk
         if min_mc.cl == true_label:
             # scenario 1:
-            # min_mc.cf_all.append(instance)
 
-            min_mc.n += 1
-            min_mc.centroid = ((np.array(min_mc.centroid) * (min_mc.n - 1) + features) / min_mc.n).tolist()
+
+            #update n
+            min_mc.n = min_mc.n + 1
+
+            #update centroids
+            temp_centroids = np.array(min_mc.centroid) * (min_mc.n - 1)
+            min_mc.centroid = (np.add(temp_centroids, features_np) / min_mc.n).tolist()
+
+            #update CF2_X
+            temp_features = features_np * features_np
+            min_mc.cf2_x = (np.add(min_mc.cf2_x, temp_features)).tolist()
 
             if min_mc.epsilon > 0:
                 min_mc.epsilon -= 1
         else:
             # scenario 2:
-            # true_mc.cf_all.append(instance)
-
+            
+            # need to find the true mc
             true_mc = self.find_true_nearest_mc(instance)
-
-            true_mc.n += 1
-            true_mc.centroid = ((np.array(true_mc.centroid) * (true_mc.n - 1) + features) / true_mc.n).tolist()
 
             true_mc.epsilon += 1
             min_mc.epsilon += 1
+
+            #update n
+            true_mc.n = true_mc.n + 1
+
+            #update centroids
+            temp_centroids = np.array(true_mc.centroid) * (true_mc.n - 1)
+            true_mc.centroid = (np.add(temp_centroids, features_np) / true_mc.n).tolist()
+
+            # update CF2_X
+            temp_features = features_np * features_np
+            true_mc.cf2_x = (np.add(true_mc.cf2_x, temp_features)).tolist()
+
 
             # TODO: check and split
             # ...
@@ -154,15 +178,22 @@ class MC_NN:
             if mc.cl == 'normal':
                 with open(join(mc_folder, 'normal_mc_1.csv'), 'w', newline='') as f:
                     csv_writer = csv.writer(f)
-                    csv_writer.writerow([mc.epsilon])
-                    csv_writer.writerow([mc.n])
-                    csv_writer.writerow(mc.centroid)
+
+                    csv_writer.writerow([mc.epsilon]) #write new epsilon
+                    csv_writer.writerow([mc.n])  # write new count
+                    csv_writer.writerow(mc.centroid)  # write new centroids
+                    csv_writer.writerow(mc.cf2_x)  # write new CF2_X
+
             elif mc.cl == 'anomaly':
                 with open(join(mc_folder, 'anomaly_mc_1.csv'), 'w', newline='') as f:
                     csv_writer = csv.writer(f)
-                    csv_writer.writerow([mc.epsilon])
-                    csv_writer.writerow([mc.n])
-                    csv_writer.writerow(mc.centroid)
+                    csv_writer.writerow([mc.epsilon])  # write new epsilon
+                    csv_writer.writerow([mc.n])  # write new count
+                    csv_writer.writerow(mc.centroid)  # write new centroids
+                    csv_writer.writerow(mc.cf2_x)  # write new CF2_X
+
+
+
 
         return prediction
 
@@ -187,22 +218,29 @@ def init_mcnn_pool(data_file, sc):
 
         if rand[-1] == 'normal' and normal is None:
             normal = rand
+
+            cf1_x_normal = [x for x in normal if is_number(x)]
+            cf2_x_normal = [float(x) * float(y) for x, y in zip(cf1_x_normal, cf1_x_normal)]
+
         elif rand[-1] == 'anomaly' and anomaly is None:
             anomaly = rand
-
-    normal = [x for x in normal if is_number(x)]
-    anomaly = [x for x in anomaly if is_number(x)]
+            cf1_x_anomaly = [x for x in anomaly if is_number(x)]
+            cf2_x_anomaly = [float(x) * float(y) for x, y in zip(cf1_x_anomaly, cf1_x_anomaly)]
 
     with open(join(mc_folder, 'normal_mc_1.csv'), 'w', newline='') as f:
         csv_writer = csv.writer(f)
-        csv_writer.writerow("0")  # initial epsilon
-        csv_writer.writerow("1")  # initial count of instances in the cluster
-        csv_writer.writerow(normal)
+        csv_writer.writerow("0")  # initial epsilon #first row
+        csv_writer.writerow("1")  # initial count of instances in the cluster #second row
+        csv_writer.writerow(normal)  # initial centroid in the cluster #third row
+        csv_writer.writerow(cf2_x_normal)
+
     with open(join(mc_folder, 'anomaly_mc_1.csv'), 'w', newline='') as f:
         csv_writer = csv.writer(f)
-        csv_writer.writerow("0")  # initial epsilon
-        csv_writer.writerow("1")  # initial count of instances in the cluster
-        csv_writer.writerow(anomaly)
+        csv_writer.writerow("0")  # initial epsilon #first row
+        csv_writer.writerow("1")  # initial count of instances in the cluster #second row
+        csv_writer.writerow(anomaly)  # initial centroid in the cluster #third row
+        csv_writer.writerow(cf2_x_anomaly)
+
 
 
 def predict(instance):
@@ -212,6 +250,8 @@ def predict(instance):
 
     # TODO: after the previous RDD deletes the files, the next RDD may fail to
     #       read the mc files.
-    # clean_mc_folder()
+
+    #clean_mc_folder()
+
 
     return None
