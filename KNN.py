@@ -1,4 +1,3 @@
-
 from io import StringIO
 from csv import reader
 from collections import deque
@@ -13,7 +12,10 @@ def init_KNN(file_name, sc, pool_size):
     return deque(data.takeSample(False, pool_size), maxlen=pool_size)
 
 
-def euclidean_distance(v1, v2):
+def distance(v1, v2):
+    '''
+    Now only consider Euclidean distance
+    '''
     dis = 0
     for i in range(len(v1)):
         if v1[i].isnumeric():
@@ -25,7 +27,7 @@ def KNN(KNN_pool:Deque, k, instance):
     vote_pool = []
 
     for i in KNN_pool:
-        sim = euclidean_distance(instance, i)
+        sim = distance(instance, i)
         vote_pool.append((sim, i[-1]))
 
     # update pool

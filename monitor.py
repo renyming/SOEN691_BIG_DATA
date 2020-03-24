@@ -1,9 +1,8 @@
 import pyspark
+import KNN as real_time_KNN
 from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
-
-import KNN as real_time_KNN
 from MCNN import predict
 from MCNN import init_mcnn_pool
 
@@ -58,6 +57,7 @@ def MCNN_predict(rdds):
 
 def main(ssc , pool):
 
+
     # read changed files under "input_dir" folder
     lines = ssc.textFileStream("./input_dir").map(lambda x: list(reader(StringIO(x)))[0])
 
@@ -81,7 +81,6 @@ def main(ssc , pool):
 
 
 if __name__ == "__main__":
-
     # spark initialization
     conf = pyspark.SparkConf().setMaster("local[2]")
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
@@ -93,4 +92,4 @@ if __name__ == "__main__":
     # run streaming
     main(ssc, KNN_pool)
 
-
+    
