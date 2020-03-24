@@ -41,18 +41,28 @@ def get_results(predictions_labels):
     return true_pos.union(false_pos.union(true_neg.union(false_neg)))
 
 
-def functions_test(rdds):
+def saveCoord(rdd):
+
+    rdd.foreach(lambda rec: open("myoutput.txt", "a").write(rec[0] + ":" +rec[1] + '\n'))
+
+
+def saveCoord2(rdd):
+
+    rdd.foreach(lambda rec: open("myoutput2.txt", "a").write(str(rec) + '\n'))
+
+
+def MCNN_predict(rdds):
+
     rdds.foreach(lambda x: predict(x))
 
-def RT_KNN(sc , knn_pool):
 
-    ssc = StreamingContext(sc, 3)  # Streaming will execute in each 3 seconds
+def main(ssc , pool):
 
     # read changed files under "input_dir" folder
     lines = ssc.textFileStream("./input_dir").map(lambda x: list(reader(StringIO(x)))[0])
 
     # make predictions on KNN
-    # predictions_knn = lines.map(lambda x: (real_time_KNN.KNN(knn_pool, 10, x), x[-1]))
+    # predictions_knn = lines.map(lambda x: (real_time_KNN.KNN(pool, 10, x), x[-1]))
     # knn_results = get_results(predictions_knn)
     # knn_results.pprint()
 
@@ -61,7 +71,7 @@ def RT_KNN(sc , knn_pool):
     # mcnn_results = get_results(predictions_mcnn)
     # mcnn_results.pprint()
 
-    lines.foreachRDD(functions_test)
+    lines.foreachRDD(MCNN_predict)
     lines.pprint()
 
 
@@ -73,13 +83,14 @@ def RT_KNN(sc , knn_pool):
 if __name__ == "__main__":
 
     # spark initialization
-    conf = pyspark.SparkConf().setAppName("kmeans").setMaster("local[2]")
+    conf = pyspark.SparkConf().setMaster("local[2]")
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
+    ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
 
     KNN_pool = real_time_KNN.init_KNN('./source_dir/Train.csv', sc, 100)
     init_mcnn_pool('./source_dir/Train.csv', sc)
 
     # run streaming
-    RT_KNN(sc , KNN_pool)
+    main(ssc, KNN_pool)
 
 

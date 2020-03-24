@@ -18,6 +18,7 @@ class MC:
         self.cl = 'unknown'         # class label
         self.alpha = datetime.now() # initial time stamp
         self.omega = 0              # threshold for performance
+        self.variances = []          # attribute variances
 
     def print(self):
         print("epsilon   = " + str(self.epsilon) + "\n" + \

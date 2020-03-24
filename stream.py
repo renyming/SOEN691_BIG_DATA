@@ -31,7 +31,7 @@ def start():
 
         start_index += ri
 
-        time.sleep(6)
+        time.sleep(3)
 
 def clean():
 

@@ -8,9 +8,31 @@ from os.path import join
 from csv import reader
 from mcnnmc import MC
 
+'''
+改动的地方:
+1. 每个mc文件头的信息：
+    1) epsilon  : error counter
+    2) n        : number of instances
+    3) centroid : centroid
+    4) CF2_x    : sum of the squares of the attributes in CF1_x
+2. 每个rdd需要读：epsilon, n, centroid, CF2_x
+    1) 先根据 centroid, n 算出 CF1_x
+    2) 在根据 CF1_x, CF2_x 算出 vairiance
+    3) 根据 centroid 算距离
+    4) 不需要存每个点的数据
+    5) Split : 找到最大的 variance 中的下标，先更新 CF1_x, 再根据 CF1_x 算出两个新的 
+               centroid 写回去
+    5) 如果用 foreachRDD，需要存下来:
+          epsilon
+          n 
+          centroid (CF1_x / n)
+          CF2_x
+    6) 需要在 MCNN/predict 方法里把 (prediction, label, time) 写到一个新的文件
+    7) 最后等所有 (prediction, label, time) 都存下来后，再写另一个py文件做 evaluation
+'''
+
 
 mc_folder = './mcnn_mcs'
-
 
 # helper function
 def is_number(string):
@@ -58,20 +80,13 @@ class MC_NN:
             with open(join(mc_folder, file), 'r') as f:
                 lines = f.read().splitlines()
 
-                # the first line is epsilon (for convention)
                 mc.epsilon = int(lines[0])
+                mc.n = int(lines[1])
+                mc.centroid = [float(x) for x in lines[2].split(',')]
+                # mc.cf2_x = [float(x) for x in lines[3].split(',')]
 
                 # the following elements are instances in the mc
-                mc.cf_all = [[x for x in line.split(',')] for line in lines[1:]]
-
-                # note: x.isnumeric returns False for float numbers
-                mc.cf = [[float(x) for x in line.split(',') if is_number(x)] for line in lines[1:]]
-
-            cf_temp = np.array(mc.cf)
-            mc.cf1_x = np.sum(cf_temp, axis=0)
-            mc.cf2_x = np.multiply(mc.cf1_x, mc.cf1_x)
-            mc.n = cf_temp.shape[0]
-            mc.centroid = mc.cf1_x / mc.n
+            #     mc.cf_all = [[x for x in line.split(',')] for line in lines[1:]]
 
             self.pool.append(mc)
 
@@ -97,7 +112,7 @@ class MC_NN:
 
     def predict_and_update_mcs(self, instance, true_label):
         # predict
-        features = [float(attr) for attr in instance if is_number(attr)]
+        features = np.array([float(attr) for attr in instance if is_number(attr)])
 
         min_distance = float('inf')
         min_mc = None
@@ -112,16 +127,21 @@ class MC_NN:
         # update micro clusters and save on disk
         if min_mc.cl == true_label:
             # scenario 1:
-            min_mc.cf_all.append(instance)
+            # min_mc.cf_all.append(instance)
+
+            min_mc.n += 1
+            min_mc.centroid = (np.add(np.array(min_mc.centroid) * (min_mc.n - 1), features) / min_mc.n).tolist()
 
             if min_mc.epsilon > 0:
                 min_mc.epsilon -= 1
         else:
             # scenario 2:
-            # need to find the true mc
+            # true_mc.cf_all.append(instance)
+
             true_mc = self.find_true_nearest_mc(instance)
 
-            true_mc.cf_all.append(instance)
+            true_mc.n += 1
+            true_mc.centroid = (np.add(np.array(true_mc.centroid) * (true_mc.n - 1), features) / true_mc.n).tolist()
 
             true_mc.epsilon += 1
             min_mc.epsilon += 1
@@ -135,14 +155,14 @@ class MC_NN:
                 with open(join(mc_folder, 'normal_mc_1.csv'), 'w', newline='') as f:
                     csv_writer = csv.writer(f)
                     csv_writer.writerow([mc.epsilon])
-                    csv_writer.writerows(mc.cf_all)
+                    csv_writer.writerow([mc.n])
+                    csv_writer.writerow(mc.centroid)
             elif mc.cl == 'anomaly':
                 with open(join(mc_folder, 'anomaly_mc_1.csv'), 'w', newline='') as f:
                     csv_writer = csv.writer(f)
                     csv_writer.writerow([mc.epsilon])
-                    csv_writer.writerows(mc.cf_all)
-            else:
-                print("???????? non-reachable !!!!!!!!!!")
+                    csv_writer.writerow([mc.n])
+                    csv_writer.writerow(mc.centroid)
 
         return prediction
 
@@ -170,13 +190,18 @@ def init_mcnn_pool(data_file, sc):
         elif rand[-1] == 'anomaly' and anomaly is None:
             anomaly = rand
 
+    normal = [x for x in normal if is_number(x)]
+    anomaly = [x for x in anomaly if is_number(x)]
+
     with open(join(mc_folder, 'normal_mc_1.csv'), 'w', newline='') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow("0")  # initial epsilon
+        csv_writer.writerow("1")  # initial count of instances in the cluster
         csv_writer.writerow(normal)
     with open(join(mc_folder, 'anomaly_mc_1.csv'), 'w', newline='') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow("0")  # initial epsilon
+        csv_writer.writerow("1")  # initial count of instances in the cluster
         csv_writer.writerow(anomaly)
 
 
@@ -189,4 +214,4 @@ def predict(instance):
     #       read the mc files.
     # clean_mc_folder()
 
-    return prediction
+    return None
