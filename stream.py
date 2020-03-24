@@ -16,14 +16,14 @@ def start():
 
     start_index = 0
 
-    for i in range(40):
+    for i in range(200):
 
         with open('./input_dir/raw_data' + str(i) + '.csv', 'w', newline='') as file:
 
             csv_writer = csv.writer(file)
             #ri = random.randint(40,50)
 
-            ri = 500
+            ri = 100
 
             for j in range(ri):
 
