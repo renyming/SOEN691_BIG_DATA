@@ -19,6 +19,9 @@ class MC:
         self.alpha = datetime.now() # initial time stamp
         self.omega = 0              # threshold for performance
 
+        #new
+        self.variance_x = []          #variance vector for each attribute
+
     def print(self):
         print("epsilon   = " + str(self.epsilon) + "\n" + \
               "theta     = " + str(self.theta) + "\n" + \
