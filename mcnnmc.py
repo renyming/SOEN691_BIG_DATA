@@ -19,8 +19,10 @@ class MC:
         self.alpha = datetime.now() # initial time stamp
         self.omega = 0              # threshold for performance
 
-        #new
-        self.variance_x = []          #variance vector for each attribute
+        # new attributes for the split purpose
+        self.variance_x = []        # variance vector for each attribute
+        self.status = 'unknown'     # To indicate the mc is alive or not
+        self.filename = 'unknown.csv'
 
     def print(self):
         print("epsilon   = " + str(self.epsilon) + "\n" + \
