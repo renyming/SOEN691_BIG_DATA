@@ -55,7 +55,7 @@ def MCNN_predict(rdds):
     rdds.foreach(lambda x: predict(x))
 
 
-def main(ssc , pool):
+def main(ssc, pool):
 
     # read on Hadoop
     # lines = ssc.textFileStream("hdfs://localhost:9000/input_dir")
@@ -84,6 +84,9 @@ if __name__ == "__main__":
 
     KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
     init_mcnn_pool('./source_dir/Train.csv', sc)
+
+    # KNN_pool = Knn.init_KNN('./source_dir/Subsamples.csv', sc, 100)
+    # init_mcnn_pool('./source_dir/Subsamples.csv', sc)
 
     main(ssc , KNN_pool)
 

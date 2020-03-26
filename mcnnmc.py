@@ -4,13 +4,14 @@ class MC:
     """
     Micro-Cluster in MCNN
     """
+
     def __init__(self, theta):
         self.epsilon = 0            # error counter
         self.theta = theta          # upper threshold
         self.centroid = None        # centroid
 
-        self.cf_all = []            # cluster feature (all, used for writing)
-        self.cf = []                # cluster feature (numeric only)
+        self.cf_all = []            # cluster feature (all, used for writing) #may not used this
+        self.cf = []                # cluster feature (numeric only)          #and this
 
         self.cf1_x = None           # sum of feature values
         self.cf1_t = None           # sum of time stamps
@@ -19,14 +20,19 @@ class MC:
         self.cl = 'unknown'         # class label
         self.alpha = datetime.now() # initial time stamp
         self.omega = 0              # threshold for performance
-        self.variance_x = []          #variance vector for each attribute
+
+        # new attributes for the split purpose
+        self.variance_x = []        # variance vector for each attribute
+        self.status = 'unknown'     # To indicate the mc is alive or not
+        self.filename = 'unknown.csv'
+
 
     def print(self):
-        print("epsilon   = " + str(self.epsilon) + "\n" +\
-              "theta     = " + str(self.theta) + "\n" +\
-              "# instances   = " + str(self.n) + "\n" +\
-              "class label   = " + self.cl + "\n" +\
-              "timestamp = " + str(self.alpha) + "\n" +\
+        print("epsilon   = " + str(self.epsilon) + "\n" + \
+              "theta     = " + str(self.theta) + "\n" + \
+              "# instances   = " + str(self.n) + "\n" + \
+              "class label   = " + self.cl + "\n" + \
+              "timestamp = " + str(self.alpha) + "\n" + \
               "omega     = " + str(self.omega))
         print("centroid  = ", self.centroid)
         print("features  = ", self.cf)

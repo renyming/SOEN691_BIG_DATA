@@ -7,6 +7,7 @@ def start():
 
     raw_data = []
     with open('./source_dir/Train.csv', 'r') as csv_file:
+    # with open('./source_dir/Subsamples.csv', 'r') as csv_file:
 
         csv_reader = csv.reader(csv_file)
 
