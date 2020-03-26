@@ -1,7 +1,7 @@
 import csv
 import time
 import os, shutil
-import random
+
 
 def start():
 
