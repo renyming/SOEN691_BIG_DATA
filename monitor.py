@@ -1,4 +1,5 @@
 import pyspark
+import datetime
 import KNN as real_time_KNN
 from pyspark.streaming import StreamingContext
 from io import StringIO
@@ -54,6 +55,10 @@ def MCNN_predict(rdds):
 
     rdds.foreach(lambda x: predict(x))
 
+def saveResults(rdd):
+
+    rdd.foreach(lambda rec: open("./rt_knn_dir/results"+ datetime.datetime.now().strftime("%m-%d-%Y, %H:%M:%S") + ".txt", "a").write(rec[0]+ ',' + rec[1] + ',' + datetime.datetime.now().strftime("%m-%d-%Y, %H:%M:%S") + '\n'))
+
 
 def main(ssc , pool):
 
@@ -62,18 +67,21 @@ def main(ssc , pool):
 
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
 
-
     # make predictions
-    #predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
+    # predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
+    predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 50, x), x[-1]))
 
-    #predictions_labels.foreachRDD(saveCoord)
-    #predictions_labels.pprint()
+
+    predictions_labels.foreachRDD(saveResults)
+
+
+    # predictions_labels.pprint()
     #pool.pprint()
 
 
     # start StreamingContext
-    lines.pprint()
-    lines.foreachRDD(MCNN_predict)
+    # lines.pprint()
+    # lines.foreachRDD(MCNN_predict)
 
     ssc.start()
     ssc.awaitTermination()

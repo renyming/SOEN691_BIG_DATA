@@ -24,7 +24,7 @@ def distance(v1, v2):
     return dis
 
 max_size = 300
-def KNN(pool ,k, instance):
+
 
 
 def KNN(KNN_pool:Deque, k, instance):
