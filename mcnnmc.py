@@ -22,4 +22,3 @@ class MC:
         self.variance_x = []        # variance vector for each attribute
         self.status = 'unknown'     # indicate if the mc is activate
         self.filename = 'unknown.csv'
-
