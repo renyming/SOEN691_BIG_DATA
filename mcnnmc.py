@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 class MC:
     """
     Micro-Cluster in MCNN
@@ -7,12 +8,8 @@ class MC:
 
     def __init__(self, theta):
         self.epsilon = 0            # error counter
-        self.theta = theta          # upper threshold
+        self.theta = theta          # upper error threshold
         self.centroid = None        # centroid
-
-        self.cf_all = []            # cluster feature (all, used for writing) #may not used this
-        self.cf = []                # cluster feature (numeric only)          #and this
-
         self.cf1_x = None           # sum of feature values
         self.cf1_t = None           # sum of time stamps
         self.cf2_x = None           # sum of squares of attributes
@@ -21,22 +18,7 @@ class MC:
         self.alpha = datetime.now() # initial time stamp
         self.omega = 0              # threshold for performance
 
-        # new attributes for the split purpose
+        # attributes for the split purpose
         self.variance_x = []        # variance vector for each attribute
-        self.status = 'unknown'     # To indicate the mc is alive or not
+        self.status = 'unknown'     # indicate if the mc is activate
         self.filename = 'unknown.csv'
-
-
-    def print(self):
-        print("epsilon   = " + str(self.epsilon) + "\n" + \
-              "theta     = " + str(self.theta) + "\n" + \
-              "# instances   = " + str(self.n) + "\n" + \
-              "class label   = " + self.cl + "\n" + \
-              "timestamp = " + str(self.alpha) + "\n" + \
-              "omega     = " + str(self.omega))
-        print("centroid  = ", self.centroid)
-        print("features  = ", self.cf)
-        print("features sum  = ", self.cf1_x)
-        print("timestamp sum = ", self.cf1_t)
-        print("features soq  = ", self.cf2_x)
-

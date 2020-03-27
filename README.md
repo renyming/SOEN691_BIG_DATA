@@ -30,6 +30,9 @@ The dataset was created in a military network environment.They created a LAN net
 
 The dataset has 25192 rows and 42 columns. The dataset is clean. We don’t have any NULL or EMPTY values. It has 11743 rows which are classified as anomaly and the rest 13449 classified as normal. We think we will mostly use 20 columns as the other columns have zero values. We are planning on combining different columns and see which combination gives better results.Based on the initial assessment  the columns we think  are important for the classification are class, srv_error_rate, error_rate, dst_host_error_rate and dst_host_srv_rerror_rate. We are a little bit unsure about the meaning of some of the columns in the dataset. We are researching these columns to get more information.
 
+(reference: https://www.kaggle.com/sampadab17/network-intrusion-detection)
+
+
 <h2>Technologies</h2>
 
 The main issue about our application is to find a proper data streaming source to imitate the real network environment. Here we use spark streaming library to create the file stream on the dataset. The main purpose of this project is to use different classifiers (KNN and MC-NN) to detect the network anomalies. In this case, we need consistent stream of data to test on the performance of different classifiers. Also spark operations on the streaming will be used to implement the algorithms. The detailed documentation of spark streaming can be found. 
