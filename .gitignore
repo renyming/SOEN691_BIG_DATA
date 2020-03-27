@@ -1,0 +1,5 @@
+./input_dir/
+.idea
+__pycache_
+.iml
+venv
