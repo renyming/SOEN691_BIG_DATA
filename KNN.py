@@ -1,8 +1,10 @@
-
 from io import StringIO
 from csv import reader
 from collections import deque
 from typing import Deque
+
+
+max_size = 300
 
 
 def init_KNN(file_name, sc, pool_size):
@@ -23,9 +25,6 @@ def distance(v1, v2):
             dis += (float(v1[i]) - float(v2[i])) ** 2
     return dis
 
-max_size = 300
-def KNN(pool ,k, instance):
-
 
 def KNN(KNN_pool:Deque, k, instance):
     vote_pool = []
@@ -37,7 +36,6 @@ def KNN(KNN_pool:Deque, k, instance):
     # update pool
     KNN_pool.popleft()
     KNN_pool.append(instance)
-
 
     # sort the vote pool on the distance
     vote_pool = sorted(vote_pool, key=lambda tup: tup[0])
