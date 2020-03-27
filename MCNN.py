@@ -232,9 +232,10 @@ class MC_NN:
                 csv_writer.writerow([mc.status])
                 csv_writer.writerow([mc.filename])
 
-        # return type (prediction_lable, true_lable), time_stamp)
-        # need more formal format for the time_stamp
-        return prediction, instance[-1], datetime.now()
+        # save predictions, true label, time stamp to a file for later evaluation
+        with open('./mcnn_predictions.csv', "a", newline='') as out:
+            out_writer = csv.writer(out)
+            out_writer.writerow([prediction, instance[-1], int(datetime.utcnow().timestamp())])
 
 
 def init_mcnn_pool(data_file, sc):
@@ -289,12 +290,7 @@ def init_mcnn_pool(data_file, sc):
 def predict(instance):
     mcnn = MC_NN(theta=50, mx=10)
 
-    prediction, true_lable, time_stamp = mcnn.predict_and_update_mcs(instance, instance[-1])
-
-    # TODO: after the previous RDD deletes the files, the next RDD may fail to
-    #       read the mc files.
-    # Save the pair of (prediction, true_lable) to the disk for the future evaluation
-
-    # clean_mc_folder()
+    # save predictions to a files for later evaluation
+    mcnn.predict_and_update_mcs(instance, instance[-1])
 
     return None
