@@ -233,7 +233,7 @@ class MC_NN:
                 csv_writer.writerow([mc.filename])
 
         # save predictions, true label, time stamp to a file for later evaluation
-        with open('./mcnn_predictions.csv', "a", newline='') as out:
+        with open('./mcnn_pred/mcnn_predictions.csv', "a", newline='') as out:
             out_writer = csv.writer(out)
             out_writer.writerow([prediction, instance[-1], int(datetime.utcnow().timestamp())])
 

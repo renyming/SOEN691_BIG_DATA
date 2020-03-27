@@ -1,7 +1,7 @@
 import numpy as np
 
 # read results in 'mcnn_predictions.csv'
-with open('mcnn_predictions.csv', 'r') as f:
+with open('./mcnn_pred/mcnn_predictions.csv', 'r') as f:
     lines = f.read().splitlines()
     lines = [x.split(',') for x in lines]
     lines_np = np.array(lines)
