@@ -29,30 +29,22 @@ def vote(instance, train, k):
 def distance(x, y):
     dist = 0.0
     for i in range(len(x) - 1):
-        if is_float(x[i]):
+        if i not in [1, 2, 3]:
             dist += (float(x[i]) - float(y[i])) ** 2
         elif x[i] != y[i]:
             dist += 10000
     return dist
 
 
-def is_float(v):
-    try:
-        float(v)
-        return True
-    except ValueError:
-        return False
-
-
 if __name__ == '__main__':
-    conf = pyspark.SparkConf().setMaster("local[1]")
+    conf = pyspark.SparkConf().setMaster("local[*]")
     sc = pyspark.SparkContext(appName="ClassicalKNN", conf=conf)
 
     data = sc.textFile('./input_dir/raw_data[0-5].csv').map(lambda x: list(reader(StringIO(x)))[0])
     test, train = data.randomSplit(weights=[0.8, 0.2])
     train = train.collect()
 
-    k_range = range(3, 26)
+    k_range = range(10, 11)
 
     for k in k_range:
 
