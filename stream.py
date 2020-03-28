@@ -2,7 +2,6 @@ import csv
 import time
 import os, shutil
 
-
 def start():
 
     raw_data = []
@@ -50,6 +49,7 @@ def clean():
 clean()
 
 start()
+
 
 
 
