@@ -1,6 +1,9 @@
 import pyspark
+import numpy as np
 import pandas as pd
 import KNN as Knn
+from sklearn import preprocessing
+from sklearn.utils import shuffle
 from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
@@ -41,34 +44,48 @@ def get_results(predictions_labels, sc):
     return true_pos.union(false_pos.union(true_neg.union(false_neg)))
 
 
-def preprocessing(path):
-    headers = ["duration", "protocol_type", "service", "flag", "src_bytes",
-               "dst_bytes", "land", "wrong_fragment", "urgent", "hot", "num_failed_logins",
-               "logged_in", "num_compromised", "root_shell", "su_attempted", "num_root",
-               "num_file_creations", "num_shells", "num_access_files", "num_outbound_cmds",
-               "is_host_login", "is_guest_login", "count", "srv_count", "serror_rate",
-               "srv_serror_rate", "rerror_rate", "srv_rerror_rate", "same_srv_rate",
-               "diff_srv_rate", "srv_diff_host_rate", "dst_host_count", "dst_host_srv_count",
+def data_preprocessing(path):
+    headers = ["duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes",
+               "land", "wrong_fragment", "urgent", "hot", "num_failed_logins", "logged_in",
+               "num_compromised", "root_shell", "su_attempted", "num_root", "num_file_creations",
+               "num_shells", "num_access_files", "num_outbound_cmds", "is_host_login",
+               "is_guest_login", "count", "srv_count", "serror_rate", "srv_serror_rate",
+               "rerror_rate", "srv_rerror_rate", "same_srv_rate", "diff_srv_rate",
+               "srv_diff_host_rate", "dst_host_count", "dst_host_srv_count",
                "dst_host_same_srv_rate", "dst_host_diff_srv_rate", "dst_host_same_src_port_rate",
                "dst_host_srv_diff_host_rate", "dst_host_serror_rate", "dst_host_srv_serror_rate",
                "dst_host_rerror_rate", "dst_host_srv_rerror_rate", "target"]
     df = pd.read_csv(path, header=None, names=headers)
-    mapping = {'normal': 0, 'anomaly': 1}
-    mapping_res = {0: 'normal', 1: 'anomaly'}
-    df = df.replace({"target": mapping})
-    df = df._get_numeric_data()
+    df_normal = df.loc[df['target'] == 'normal']
+    df_anomaly = df.loc[df['target'] == 'anomaly']
 
-    # clean by iqr score
-    Q1 = df.quantile(0.03)
-    Q3 = df.quantile(0.97)
-    IQR = Q3 - Q1   # difference between 1th and 99th percentiles
-    df_clean = df[~((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR))).any(axis=1)]
-    print('before', df.shape)
-    print('after', df_clean.shape)
+    # First, find the outliers in normal and anomaly and ignore them
+    def filter_outliers(dataf):
+        # calc iqr score
+        Q1 = dataf._get_numeric_data().quantile(0.001)
+        Q3 = dataf._get_numeric_data().quantile(0.999)
+        IQR = Q3 - Q1  # difference between 0.1th and 99.9th percentiles
+        # clean by iqr score
+        df_class_clean = dataf[~((dataf._get_numeric_data() < (Q1 - 1.5 * IQR)) | (dataf._get_numeric_data() > (Q3 + 1.5 * IQR))).any(axis=1)]
+        return df_class_clean
+    df_normal_clean = filter_outliers(df_normal)
+    df_anomaly_clean = filter_outliers(df_anomaly)
+    df_clean = pd.concat([df_normal_clean, df_anomaly_clean], axis=0, sort=False)
 
-    # write the cleaned data to another file 'source_dir/Train_c.csv'
-    df_clean = df_clean.replace({"target": mapping_res})
-    df_clean.to_csv('./source_dir/Train_c.csv', index=False, header=False)
+    print('preprocessing:')
+    print('  previous', df.shape)
+    print('  later   ', df_clean.shape)
+    # Second, normalize all numeric columns
+    for column in df_clean._get_numeric_data():
+        mmscaler = preprocessing.MinMaxScaler()
+        x_array = np.array(df_clean[column].astype(float)).reshape(-1, 1)
+        df_clean[column] = mmscaler.fit_transform(x_array)
+    # set normalized clean dataset to df
+    df_norm = df_clean
+
+    # Finally, shuffle the data then write the cleaned data to file 'source_dir/Train_clean.csv'
+    df_final = shuffle(df_norm)
+    df_final.to_csv('./source_dir/Train_clean.csv', index=False, header=False)
 
 
 def saveCoord(rdd):
@@ -87,7 +104,6 @@ def MCNN_predict(rdds):
 
 
 def main(ssc, pool):
-
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
 
     # make predictions
@@ -110,9 +126,9 @@ if __name__ == "__main__":
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
     ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
 
-    preprocessing('./source_dir/Train.csv')
-    KNN_pool = Knn.init_KNN('./source_dir/Train_c.csv', sc, 100)
-    init_mcnn_pool('./source_dir/Train_c.csv', sc)
+    data_preprocessing('./source_dir/Train.csv')
+    KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
+    init_mcnn_pool('./source_dir/Train_clean.csv', sc)
 
     main(ssc , KNN_pool)
 
