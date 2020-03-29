@@ -28,6 +28,11 @@ Notations:
     7) evaluation
 '''
 
+'''
+categorical-based centroids update ??
+
+'''
+
 mc_folder = './mcnn_mcs'
 
 # helper function
@@ -37,7 +42,6 @@ def is_number(string):
         return True
     except ValueError:
         return False
-
 
 # helper function
 def clean_mc_folder():
