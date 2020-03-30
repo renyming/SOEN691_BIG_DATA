@@ -28,6 +28,11 @@ Notations:
     7) evaluation
 '''
 
+'''
+categorical-based centroids update ??
+
+'''
+
 mc_folder = './mcnn_mcs'
 
 # helper function
@@ -37,7 +42,6 @@ def is_number(string):
         return True
     except ValueError:
         return False
-
 
 # helper function
 def clean_mc_folder():
@@ -58,6 +62,7 @@ class MC_NN:
         self.theta = theta
         self.pool = []  # a list of MC objects
         self.read_mcnn_pool()  # populate the essential attributes for MC
+
         self.mx = mx    # maximum number of mcs
 
     def read_mcnn_pool(self):
@@ -87,11 +92,12 @@ class MC_NN:
                 mc.filename = lines[5]
 
             mc.cf1_x = [x * mc.n for x in mc.centroid]  # The sum of the feature is the average centroid * n
+
             # calculate the variance
             temp_cf2_x = np.array(mc.cf2_x) / mc.n
             temp_cf1_x = np.multiply(mc.centroid, mc.centroid)
             mc.variance_x = np.sqrt(temp_cf2_x - temp_cf1_x).tolist()
-            
+
             if mc.status == 'activate':
                 self.pool.append(mc)
 
@@ -118,6 +124,7 @@ class MC_NN:
     def split_mc(self):
 
         for mc in self.pool:
+
             if mc.epsilon > self.theta:
                 max_index = mc.variance_x.index(max(mc.variance_x))
                 max_variance = mc.variance_x[max_index]
@@ -125,13 +132,10 @@ class MC_NN:
                 child_mc_1 = MC(self.theta)
                 child_mc_2 = MC(self.theta)
 
-
                 child_mc_1.epsilon = int(mc.epsilon / 2)
                 child_mc_2.epsilon = int(mc.epsilon / 2)
                 child_mc_1.n = mc.n
                 child_mc_2.n = mc.n
-                child_mc_1.cl = mc.cl
-                child_mc_2.cl = mc.cl
 
                 child_mc_1.cf1_x = mc.cf1_x
                 child_mc_2.cf1_x = mc.cf1_x
@@ -169,6 +173,7 @@ class MC_NN:
         # update micro clusters and save on disk
         if min_mc.cl == true_label:
             # scenario 1:
+
             # update n
             min_mc.n = min_mc.n + 1
 
@@ -190,6 +195,7 @@ class MC_NN:
                 min_mc.epsilon -= 1
         else:
             # scenario 2:
+
             # need to find the true mc
             true_mc = self.find_true_nearest_mc(instance)
 
@@ -229,9 +235,11 @@ class MC_NN:
                 csv_writer.writerow([mc.status])
                 csv_writer.writerow([mc.filename])
 
-        # return type (prediction_lable, true_lable), time_stamp)
-        # need more formal format for the time_stamp
-        return prediction, instance[-1], datetime.now()
+        # save predictions, true label, time stamp to a file for later evaluation
+        with open('./mcnn_pred/mcnn_predictions.csv', "a", newline='') as out:
+            out_writer = csv.writer(out)
+            out_writer.writerow([prediction, instance[-1], int(datetime.utcnow().timestamp())])
+
 
 def init_mcnn_pool(data_file, sc):
     '''
@@ -265,33 +273,27 @@ def init_mcnn_pool(data_file, sc):
 
     with open(join(mc_folder, 'normal_mc_1.csv'), 'w', newline='') as f:
         csv_writer = csv.writer(f)
-
-        csv_writer.writerow("0")        # initial epsilon
-        csv_writer.writerow("1")        # initial count of instances in the cluster
-        csv_writer.writerow(normal)     # initial centroid in the cluster
+        csv_writer.writerow("0")        # initial epsilon #first row
+        csv_writer.writerow("1")        # initial count of instances in the cluster #second row
+        csv_writer.writerow(normal)     # initial centroid in the cluster #third row
         csv_writer.writerow(cf2_x_normal)  # initial cf2_x
         csv_writer.writerow(['activate'])  # initial mc status
         csv_writer.writerow(['normal_mc_1.csv'])
 
     with open(join(mc_folder, 'anomaly_mc_1.csv'), 'w', newline='') as f:
         csv_writer = csv.writer(f)
-
-        csv_writer.writerow("0")        # initial epsilon
-        csv_writer.writerow("1")        # initial count of instances in the cluster
-        csv_writer.writerow(anomaly)    # initial centroid in the cluster
+        csv_writer.writerow("0")        # initial epsilon #first row
+        csv_writer.writerow("1")        # initial count of instances in the cluster #second row
+        csv_writer.writerow(anomaly)    # initial centroid in the cluster #third row
         csv_writer.writerow(cf2_x_anomaly)  # initial cf2_x
         csv_writer.writerow(['activate'])   # initial mc status
         csv_writer.writerow(['anomaly_mc_1.csv'])
 
-        
+
 def predict(instance):
     mcnn = MC_NN(theta=50, mx=10)
 
-    prediction, true_lable, time_stamp = mcnn.predict_and_update_mcs(instance, instance[-1])
-
-    # TODO: after the previous RDD deletes the files, the next RDD may fail to
-    #       read the mc files.
-    # Save the pair of (prediction, true_lable) to the disk for the future evaluation
-    # clean_mc_folder()
+    # save predictions to a files for later evaluation
+    mcnn.predict_and_update_mcs(instance, instance[-1])
 
     return None

@@ -1,6 +1,4 @@
-import sys
 import pyspark
-import numpy as np
 import pandas as pd
 import KNN as Knn
 from pyspark.streaming import StreamingContext
@@ -8,8 +6,6 @@ from io import StringIO
 from csv import reader
 from MCNN import predict
 from MCNN import init_mcnn_pool
-
-np.set_printoptions(threshold=sys.maxsize)
 
 
 def get_results(predictions_labels, sc):
@@ -56,9 +52,10 @@ def preprocessing(path):
                "dst_host_same_srv_rate", "dst_host_diff_srv_rate", "dst_host_same_src_port_rate",
                "dst_host_srv_diff_host_rate", "dst_host_serror_rate", "dst_host_srv_serror_rate",
                "dst_host_rerror_rate", "dst_host_srv_rerror_rate", "target"]
+
     df = pd.read_csv(path, header=None, names=headers)
     mapping = {'normal': 0, 'anomaly': 1}
-    mapping_rev = {0: 'normal', 1: 'anomaly'}
+    mapping_res = {0: 'normal', 1: 'anomaly'}
     df = df.replace({"target": mapping})
     df = df._get_numeric_data()
 
@@ -71,7 +68,7 @@ def preprocessing(path):
     print('after', df_clean.shape)
 
     # write the cleaned data to another file 'source_dir/Train_c.csv'
-    df_clean = df_clean.replace({"target": mapping_rev})
+    df_clean = df_clean.replace({"target": mapping_res})
     df_clean.to_csv('./source_dir/Train_c.csv', index=False, header=False)
 
 
@@ -92,16 +89,7 @@ def MCNN_predict(rdds):
 
 def main(ssc, pool):
 
-    # read on Hadoop
-    # lines = ssc.textFileStream("hdfs://localhost:9000/input_dir")
-
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
-
-    # make predictions
-    #predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
-    #predictions_labels.foreachRDD(saveCoord)
-    #predictions_labels.pprint()
-    #pool.pprint()
 
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
@@ -122,4 +110,5 @@ if __name__ == "__main__":
     init_mcnn_pool('./source_dir/Train_c.csv', sc)
 
     main(ssc , KNN_pool)
+
 
