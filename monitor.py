@@ -1,6 +1,10 @@
 import pyspark
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import KNN as Knn
+from sklearn import preprocessing
+from sklearn.utils import shuffle
 from pyspark.streaming import StreamingContext
 from io import StringIO
 from csv import reader
@@ -9,23 +13,22 @@ from MCNN import init_mcnn_pool
 
 
 def get_results(predictions_labels, sc):
-    # 4 conditions
-    #     normal:   positive
-    #     abnormal: negative
+    # anomaly: positive
+    # normal: negative
     true_pos = predictions_labels \
-        .filter(lambda x: x[0] == x[1] and x[0] == 'normal') \
+        .filter(lambda x: x[0] == x[1] and x[0] == 'anomaly') \
         .map(lambda x: ('True positive', 1)) \
         .reduceByKey(lambda x, y: x + y)
     false_pos = predictions_labels \
-        .filter(lambda x: x[0] != x[1] and x[0] == 'normal') \
+        .filter(lambda x: x[0] != x[1] and x[0] == 'anomaly') \
         .map(lambda x: ('False positive', 1)) \
         .reduceByKey(lambda x, y: x + y)
     true_neg = predictions_labels \
-        .filter(lambda x: x[0] == x[1] and x[0] == 'anomaly') \
+        .filter(lambda x: x[0] == x[1] and x[0] == 'normal') \
         .map(lambda x: ('True negative', 1)) \
         .reduceByKey(lambda x, y: x + y)
     false_neg = predictions_labels \
-        .filter(lambda x: x[0] != x[1] and x[0] == 'anomaly') \
+        .filter(lambda x: x[0] != x[1] and x[0] == 'normal') \
         .map(lambda x: ('False negative', 1)) \
         .reduceByKey(lambda x, y: x + y)
 
@@ -41,35 +44,60 @@ def get_results(predictions_labels, sc):
     return true_pos.union(false_pos.union(true_neg.union(false_neg)))
 
 
-def preprocessing(path):
-    headers = ["duration", "protocol_type", "service", "flag", "src_bytes",
-               "dst_bytes", "land", "wrong_fragment", "urgent", "hot", "num_failed_logins",
-               "logged_in", "num_compromised", "root_shell", "su_attempted", "num_root",
-               "num_file_creations", "num_shells", "num_access_files", "num_outbound_cmds",
-               "is_host_login", "is_guest_login", "count", "srv_count", "serror_rate",
-               "srv_serror_rate", "rerror_rate", "srv_rerror_rate", "same_srv_rate",
-               "diff_srv_rate", "srv_diff_host_rate", "dst_host_count", "dst_host_srv_count",
+def data_preprocessing(path):
+    headers = ["duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes",
+               "land", "wrong_fragment", "urgent", "hot", "num_failed_logins", "logged_in",
+               "num_compromised", "root_shell", "su_attempted", "num_root", "num_file_creations",
+               "num_shells", "num_access_files", "num_outbound_cmds", "is_host_login",
+               "is_guest_login", "count", "srv_count", "serror_rate", "srv_serror_rate",
+               "rerror_rate", "srv_rerror_rate", "same_srv_rate", "diff_srv_rate",
+               "srv_diff_host_rate", "dst_host_count", "dst_host_srv_count",
                "dst_host_same_srv_rate", "dst_host_diff_srv_rate", "dst_host_same_src_port_rate",
                "dst_host_srv_diff_host_rate", "dst_host_serror_rate", "dst_host_srv_serror_rate",
                "dst_host_rerror_rate", "dst_host_srv_rerror_rate", "target"]
-
     df = pd.read_csv(path, header=None, names=headers)
-    mapping = {'normal': 0, 'anomaly': 1}
-    mapping_res = {0: 'normal', 1: 'anomaly'}
-    df = df.replace({"target": mapping})
-    df = df._get_numeric_data()
+    df_normal = df.loc[df['target'] == 'normal']
+    df_anomaly = df.loc[df['target'] == 'anomaly']
+    def plot_data(sdf, title):
+        x_axis = 'src_bytes'
+        y_axis = 'dst_bytes'
+        fig, ax = plt.subplots(figsize=(6, 6))
+        clean_data_normal = sdf.loc[sdf['target'] == 'normal']
+        clean_data_anomaly = sdf.loc[sdf['target'] == 'anomaly']
+        ax.scatter(clean_data_normal[x_axis], clean_data_normal[y_axis], s=2, c='red')
+        ax.scatter(clean_data_anomaly[x_axis], clean_data_anomaly[y_axis], s=2, c='blue')
+        ax.set_xlabel(x_axis)
+        ax.set_ylabel(y_axis)
+        plt.title(title)
+        plt.show()
+    def filter_outliers(dataf):
+        # calc iqr score
+        Q1 = dataf._get_numeric_data().quantile(0.001)
+        Q3 = dataf._get_numeric_data().quantile(0.999)
+        IQR = Q3 - Q1  # difference between 0.1th and 99.9th percentiles
+        # clean by iqr score
+        df_class_clean = dataf[~((dataf._get_numeric_data() < (Q1 - 1.5 * IQR)) | (dataf._get_numeric_data() > (Q3 + 1.5 * IQR))).any(axis=1)]
+        return df_class_clean
 
-    # clean by iqr score
-    Q1 = df.quantile(0.03)
-    Q3 = df.quantile(0.97)
-    IQR = Q3 - Q1   # difference between 1th and 99th percentiles
-    df_clean = df[~((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR))).any(axis=1)]
-    print('before', df.shape)
-    print('after', df_clean.shape)
-
-    # write the cleaned data to another file 'source_dir/Train_c.csv'
-    df_clean = df_clean.replace({"target": mapping_res})
-    df_clean.to_csv('./source_dir/Train_c.csv', index=False, header=False)
+    # First, find the outliers in normal and anomaly and ignore them
+    # plot_data(df, 'before filtering')
+    df_normal_clean = filter_outliers(df_normal)
+    df_anomaly_clean = filter_outliers(df_anomaly)
+    df_clean = pd.concat([df_normal_clean, df_anomaly_clean], axis=0, sort=False)
+    # plot_data(df_clean, 'after filtering')
+    print('preprocessing:')
+    print('  ', df.shape)
+    print('  ', df_clean.shape)
+    # Second, normalize all numeric columns
+    for column in df_clean._get_numeric_data():
+        mmscaler = preprocessing.MinMaxScaler()
+        x_array = np.array(df_clean[column].astype(float)).reshape(-1, 1)
+        df_clean[column] = mmscaler.fit_transform(x_array)
+    df_norm = df_clean
+    # plot_data(df_norm, 'after normalizing')
+    # shuffle the data then write the clean data to 'Train_clean.csv'
+    df_final = shuffle(df_norm)
+    df_final.to_csv('./source_dir/Train_clean.csv', index=False, header=False)
 
 
 def saveCoord(rdd):
@@ -88,8 +116,13 @@ def MCNN_predict(rdds):
 
 
 def main(ssc, pool):
-
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
+
+    # make predictions
+    #predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
+    #predictions_labels.foreachRDD(saveCoord)
+    #predictions_labels.pprint()
+    #pool.pprint()
 
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
@@ -105,10 +138,9 @@ if __name__ == "__main__":
     sc = pyspark.SparkContext(appName="PysparkStreaming", conf=conf)
     ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
 
-    preprocessing('./source_dir/Train.csv')
-    KNN_pool = Knn.init_KNN('./source_dir/Train_c.csv', sc, 100)
-    init_mcnn_pool('./source_dir/Train_c.csv', sc)
+    data_preprocessing('./source_dir/Train.csv')
+    KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
+    init_mcnn_pool('./source_dir/Train_clean.csv', sc)
 
     main(ssc , KNN_pool)
-
 
