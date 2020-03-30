@@ -35,6 +35,7 @@ categorical-based centroids update ??
 
 mc_folder = './mcnn_mcs'
 
+
 # helper function
 def is_number(string):
     try:
