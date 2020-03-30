@@ -54,4 +54,3 @@ def start_stream():
     start(100, 3)
 
 start_stream()
-
