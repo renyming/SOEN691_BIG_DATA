@@ -1,5 +1,4 @@
 import pyspark
-import numpy as np
 import pandas as pd
 import KNN as Knn
 from sklearn import preprocessing
@@ -55,6 +54,7 @@ def data_preprocessing(path):
                "dst_host_same_srv_rate", "dst_host_diff_srv_rate", "dst_host_same_src_port_rate",
                "dst_host_srv_diff_host_rate", "dst_host_serror_rate", "dst_host_srv_serror_rate",
                "dst_host_rerror_rate", "dst_host_srv_rerror_rate", "target"]
+
     df = pd.read_csv(path, header=None, names=headers)
     df_normal = df.loc[df['target'] == 'normal']
     df_anomaly = df.loc[df['target'] == 'anomaly']
@@ -105,12 +105,6 @@ def MCNN_predict(rdds):
 
 def main(ssc, pool):
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
-
-    # make predictions
-    #predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
-    #predictions_labels.foreachRDD(saveCoord)
-    #predictions_labels.pprint()
-    #pool.pprint()
 
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
