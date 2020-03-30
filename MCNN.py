@@ -288,7 +288,7 @@ def init_mcnn_pool(data_file, sc):
 
 
 def predict(instance):
-    mcnn = MC_NN(theta=50, mx=10)
+    mcnn = MC_NN(theta=2, mx=25)
 
     # save predictions to a files for later evaluation
     mcnn.predict_and_update_mcs(instance, instance[-1])
