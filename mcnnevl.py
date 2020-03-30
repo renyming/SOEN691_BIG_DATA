@@ -27,3 +27,4 @@ with open('./mcnn_pred/mcnn_predictions.csv', 'r') as f:
     print("Precision: {:0.5f}".format(precision))
     print("Recall: {:0.5f}".format(recall))
     print("F1 Measure: {:0.5f}".format((2 * precision * recall / (precision + recall))))
+
