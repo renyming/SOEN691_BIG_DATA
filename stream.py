@@ -3,8 +3,8 @@ import time
 import math
 import os, shutil
 
-def start(nb_instances, sleep_time):
 
+def start(nb_instances, sleep_time):
     raw_data = []
     with open('./source_dir/Train_c.csv', 'r') as csv_file:
 
@@ -56,7 +56,6 @@ def clean():
 def start_stream():
     clean()
     start(100, 3)
-
 
 start_stream()
 
