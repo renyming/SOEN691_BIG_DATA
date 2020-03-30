@@ -3,8 +3,7 @@ import time
 import os, shutil
 
 
-def start():
-
+def start(nb_instances, sleep_time):
     raw_data = []
     with open('./source_dir/Train_clean.csv', 'r') as csv_file:
 
@@ -49,7 +48,10 @@ def clean():
 
 clean()
 
-start()
 
+def start_stream():
+    clean()
+    start(100, 3)
 
+start_stream()
 
