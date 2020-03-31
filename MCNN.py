@@ -237,6 +237,21 @@ class MC_NN:
             out_writer = csv.writer(out)
             out_writer.writerow([prediction, instance[-1], int(datetime.utcnow().timestamp())])
 
+        # Prequentia error
+        with open('./mcnn_pred/mcnn_prequential_error.csv', "r", newline='') as f:
+
+            lines = f.read().splitlines()
+            last = lines[-1].split(',') # 0. error 1. n 2. mean
+            error_count = int(last[0])
+            n_count = int(last[1])
+            n_count += 1
+            if prediction != instance[-1]:
+                error_count += 1
+            mean = float(error_count/n_count)
+
+        with open('./mcnn_pred/mcnn_prequential_error.csv', "a", newline='') as out:
+            out_writer = csv.writer(out)
+            out_writer.writerow([error_count, n_count, mean])
 
 def init_mcnn_pool(data_file, sc):
     '''
@@ -286,9 +301,12 @@ def init_mcnn_pool(data_file, sc):
         csv_writer.writerow(['activate'])   # initial mc status
         csv_writer.writerow(['anomaly_mc_1.csv'])
 
+    with open('./mcnn_pred/mcnn_prequential_error.csv', "w", newline='') as f:
+        csv_writer = csv.writer(f)
+        csv_writer.writerow(["0", "0", "0.0"])
 
 def predict(instance):
-    mcnn = MC_NN(theta=2, mx=25)
+    mcnn = MC_NN(theta = 10, mx = 25)
 
     # save predictions to a files for later evaluation
     mcnn.predict_and_update_mcs(instance, instance[-1])
