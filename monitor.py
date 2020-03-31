@@ -96,7 +96,7 @@ def data_preprocessing(path):
     df_norm = df_clean
     # plot_data(df_norm, 'after normalizing')
     # shuffle the data then write the clean data to 'Train_clean.csv'
-    df_final = shuffle(df_norm)
+    df_final = shuffle(df_norm, random_state=0)
     df_final.to_csv('./source_dir/Train_clean.csv', index=False, header=False)
 
 

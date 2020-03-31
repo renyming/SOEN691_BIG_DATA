@@ -255,6 +255,8 @@ def init_mcnn_pool(data_file, sc):
     cf2_x_normal = None
     cf2_x_anomaly = None
 
+    # fix the random seed
+    random.seed(0)
     while normal is None or anomaly is None:
         rand = data.takeSample(withReplacement=False, num=1, seed=random.randint(0, 100))[0]
 
@@ -289,6 +291,7 @@ def init_mcnn_pool(data_file, sc):
 
 def predict(instance):
     mcnn = MC_NN(theta=2, mx=25)
+    # mcnn = MC_NN(theta=10, mx=25)
 
     # save predictions to a files for later evaluation
     mcnn.predict_and_update_mcs(instance, instance[-1])
