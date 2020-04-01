@@ -36,6 +36,12 @@ def distance(x, y):
     return dist
 
 
+def output_to_file(out_text):
+    with open('results.txt', 'a+') as f:
+        f.write(out_text)
+    f.close()
+
+
 if __name__ == '__main__':
     # SparkContext.setSystemProperty('spark.executor.memory', '2500m')
     conf = SparkConf().setMaster("local[*]")
@@ -49,51 +55,51 @@ if __name__ == '__main__':
 
     k_range = range(3, 11)
 
-    with open('results.txt', 'a+') as file:
-        for k in k_range:
-            file.write("========================================================\n")
-            for n in range(n_folds):
-                train = folds[n].collect()
-                test = sc.parallelize([])
-                for i in range(n_folds):
-                    if i != n:
-                        test = test.union(folds[i])
+    for k in k_range:
+        output_to_file("========================================================\n")
+        for n in range(n_folds):
+            train = folds[n].collect()
+            test = sc.parallelize([])
+            for i in range(n_folds):
+                if i != n:
+                    test = test.union(folds[i])
 
-                pred_and_labels = test.map(lambda x: (vote(x, train, k), x[-1]))
+            pred_and_labels = test.map(lambda x: (vote(x, train, k), x[-1]))
 
-                true_pos = pred_and_labels \
-                    .filter(lambda x: x[0] == x[1] and x[0] == 'anomaly') \
-                    .map(lambda x: ('True positive', 1)) \
-                    .reduceByKey(lambda x, y: x + y).collect()[0][1]
-                false_pos = pred_and_labels \
-                    .filter(lambda x: x[0] != x[1] and x[0] == 'anomaly') \
-                    .map(lambda x: ('False positive', 1)) \
-                    .reduceByKey(lambda x, y: x + y).collect()[0][1]
-                true_neg = pred_and_labels \
-                    .filter(lambda x: x[0] == x[1] and x[0] == 'normal') \
-                    .map(lambda x: ('True negative', 1)) \
-                    .reduceByKey(lambda x, y: x + y).collect()[0][1]
-                false_neg = pred_and_labels \
-                    .filter(lambda x: x[0] != x[1] and x[0] == 'normal') \
-                    .map(lambda x: ('False negative', 1)) \
-                    .reduceByKey(lambda x, y: x + y).collect()[0][1]
+            true_pos = pred_and_labels \
+                .filter(lambda x: x[0] == x[1] and x[0] == 'anomaly') \
+                .map(lambda x: ('True positive', 1)) \
+                .reduceByKey(lambda x, y: x + y).collect()[0][1]
+            false_pos = pred_and_labels \
+                .filter(lambda x: x[0] != x[1] and x[0] == 'anomaly') \
+                .map(lambda x: ('False positive', 1)) \
+                .reduceByKey(lambda x, y: x + y).collect()[0][1]
+            true_neg = pred_and_labels \
+                .filter(lambda x: x[0] == x[1] and x[0] == 'normal') \
+                .map(lambda x: ('True negative', 1)) \
+                .reduceByKey(lambda x, y: x + y).collect()[0][1]
+            false_neg = pred_and_labels \
+                .filter(lambda x: x[0] != x[1] and x[0] == 'normal') \
+                .map(lambda x: ('False negative', 1)) \
+                .reduceByKey(lambda x, y: x + y).collect()[0][1]
 
-                accuracy = (true_pos + true_neg) / (true_pos + true_neg + false_pos + false_neg)
-                precision = true_pos / (true_pos + false_pos)
-                recall = true_pos / (true_pos + false_neg)
+            accuracy = (true_pos + true_neg) / (true_pos + true_neg + false_pos + false_neg)
+            precision = true_pos / (true_pos + false_pos)
+            recall = true_pos / (true_pos + false_neg)
 
-                output = ""
+            output = ""
 
-                output += "K: {:d}\n".format(k)
-                output += "True pos: {:d}\n".format(true_pos)
-                output += "True neg: {:d}\n".format(true_neg)
-                output += "False pos: {:d}\n".format(false_pos)
-                output += "False neg: {:d}\n".format(false_neg)
-                output += "Accuracy: {:0.5f}\n".format(accuracy)
-                output += "Precision: {:0.5f}\n".format(precision)
-                output += "Recall: {:0.5f}\n".format(recall)
-                output += "F1 Measure: {:0.5f}\n".format((2 * precision * recall / (precision + recall)))
-                output += "---------------------------------------\n"
+            output += "K: {:d}\n".format(k)
+            output += "Fold: {:d}\n".format(n+1)
+            output += "True pos: {:d}\n".format(true_pos)
+            output += "True neg: {:d}\n".format(true_neg)
+            output += "False pos: {:d}\n".format(false_pos)
+            output += "False neg: {:d}\n".format(false_neg)
+            output += "Accuracy: {:0.5f}\n".format(accuracy)
+            output += "Precision: {:0.5f}\n".format(precision)
+            output += "Recall: {:0.5f}\n".format(recall)
+            output += "F1 Measure: {:0.5f}\n".format((2 * precision * recall / (precision + recall)))
+            output += "---------------------------------------\n"
 
-                file.write(output)
-                print(output)
+            output_to_file(output)
+            print(output)
