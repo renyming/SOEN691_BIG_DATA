@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=def-glatard
-#SBATCH --time=01:00:00
+#SBATCH --time=04:00:00
 #SBATCH --nodes=4
 #SBATCH --mem=4G
 #SBATCH --cpus-per-task=8

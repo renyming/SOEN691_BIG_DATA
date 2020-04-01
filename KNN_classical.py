@@ -49,9 +49,9 @@ if __name__ == '__main__':
 
     k_range = range(3, 11)
 
-    with open('results.txt') as file:
+    with open('results.txt', 'a+') as file:
         for k in k_range:
-            file.write("========================================================")
+            file.write("========================================================\n")
             for n in range(n_folds):
                 train = folds[n].collect()
                 test = sc.parallelize([])
@@ -84,16 +84,16 @@ if __name__ == '__main__':
 
                 output = ""
 
-                output += "K: {:d}".format(k)
-                output += "True pos: {:d}".format(true_pos)
-                output += "True neg: {:d}".format(true_neg)
-                output += "False pos: {:d}".format(false_pos)
-                output += "False neg: {:d}".format(false_neg)
-                output += "Accuracy: {:0.5f}".format(accuracy)
-                output += "Precision: {:0.5f}".format(precision)
-                output += "Recall: {:0.5f}".format(recall)
-                output += "F1 Measure: {:0.5f}".format((2 * precision * recall / (precision + recall)))
-                output += "---------------------------------------"
+                output += "K: {:d}\n".format(k)
+                output += "True pos: {:d}\n".format(true_pos)
+                output += "True neg: {:d}\n".format(true_neg)
+                output += "False pos: {:d}\n".format(false_pos)
+                output += "False neg: {:d}\n".format(false_neg)
+                output += "Accuracy: {:0.5f}\n".format(accuracy)
+                output += "Precision: {:0.5f}\n".format(precision)
+                output += "Recall: {:0.5f}\n".format(recall)
+                output += "F1 Measure: {:0.5f}\n".format((2 * precision * recall / (precision + recall)))
+                output += "---------------------------------------\n"
 
                 file.write(output)
                 print(output)
