@@ -59,6 +59,8 @@ if __name__ == '__main__':
         for i in range(n_folds):
             if i != n:
                 test_list[n] = test_list[n].union(folds[i])
+        train_list[n].persist()
+        test_list[n].persist()
 
     k_range = range(3, 11)
 
@@ -69,6 +71,7 @@ if __name__ == '__main__':
             test = test_list[n]
 
             pred_and_labels = test.map(lambda x: (vote(x, train, k), x[-1]))
+            pred_and_labels.persist()
 
             true_pos = pred_and_labels \
                 .filter(lambda x: x[0] == x[1] and x[0] == 'anomaly') \
@@ -87,6 +90,7 @@ if __name__ == '__main__':
                 .map(lambda x: ('False negative', 1)) \
                 .reduceByKey(lambda x, y: x + y).collect()[0][1]
 
+            pred_and_labels.unpersist()
             accuracy = (true_pos + true_neg) / (true_pos + true_neg + false_pos + false_neg)
             precision = true_pos / (true_pos + false_pos)
             recall = true_pos / (true_pos + false_neg)
