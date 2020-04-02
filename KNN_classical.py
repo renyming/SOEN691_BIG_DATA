@@ -53,18 +53,19 @@ if __name__ == '__main__':
     for fold in folds:
         fold.cache()
 
-    k_range = range(3, 11)
+    k_range = range(4, 11)
 
     for k in k_range:
         output_to_file("========================================================\n")
         for n in range(n_folds):
             train = folds[n].collect()
-            test = sc.parallelize([])
+            pred_and_labels = []
+
             for i in range(n_folds):
                 if i != n:
-                    test = test.union(folds[i])
+                    pred_and_labels.extend(folds[i].map(lambda x: (vote(x, train, k), x[-1])).collect())
 
-            pred_and_labels = test.map(lambda x: (vote(x, train, k), x[-1]))
+            pred_and_labels = sc.parallelize(pred_and_labels)
 
             true_pos = pred_and_labels \
                 .filter(lambda x: x[0] == x[1] and x[0] == 'anomaly') \
