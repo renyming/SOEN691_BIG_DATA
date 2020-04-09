@@ -59,11 +59,11 @@ for each testing instance
 
 In order to provide the baseline for MC-NN performance comparison, kNN was applied to the entire dataset offline. Since there is one hyperparameter k (the number of nearest neighbours) in kNN, cross-validation was used to search for the optimized value of k. The whole dataset was randomly split into 5 folds. 1/5 was used as training, which is around 5,000 data samples, 4/5 were used for test. 
 
-The range of k been search is [3, 9] with increment of 1, [10, 100] with increment of 10. 
+The range of k been search is [3, 9] with the increment of 1, [10, 100] with the increment of 10. 
 
 As for the distance calculation, squared difference was used for numerical features. Categorical feature distance was considered as 1 for different category values. 
 
-kNN is very expensive to compute, since it has to calculate the distance between one testing instance with every sample (there are more than 5,000 samples in this case). It is infeasible to run the spark job with single node. But thanks to Dr. Tristan Glatard’s sponsorship, we were able to perform the kNN evaluation on [Computer Canada](https://www.computecanada.ca/)'s cluster with a reasonable running time.
+kNN is very expensive to compute, since it has to calculate the distance between one testing instance with every sample (there are more than 5,000 samples in this case). It is infeasible to run the spark job with single node. But thanks to Dr. Tristan Glatard’s sponsorship, we were able to perform the kNN evaluation on [Compute Canada](https://www.computecanada.ca/)'s cluster with a reasonable running time.
 
 ### 2. Micro-Cluster Nearest Neighbour (MC-NN)
 
@@ -86,4 +86,31 @@ Its basic idea is to calculate the Euclidean distance between a new data instanc
 
 ## 1. kNN
 
-The results of kNN
+For each k, the averaged accuracy, precision, recall and F1-score were calculated from 5 iterations, and plotted as below:
+
+![](./report_pics/kNN_results.png)
+
+In general, kNN obtained very good results on the dataset, all metrics are above 0.94. However, it runs very slowly. The running time for one iteration was around 6 minutes even using 32 CPU cores. 
+
+As shown in the plot, accuracy, recall and F1-score all decrease as k increases. However, precision first shows a fluctuant decrease and then bounces back when k=10. The best overall performance appears when K=3, where the accuracy, precision and F1-score are the highest and recall is the third highest. A detailed results table is shown as below:
+
+| k    | Accuracy | Precision | Recall  | F1-score |
+| ---- | :------: | :-------: | :-----: | :------: |
+| 3    | 0.98809  |  0.98811  | 0.98634 | 0.98722  |
+| 4    | 0.98639  |  0.98178  | 0.98917 | 0.98546  |
+| 5    | 0.98652  |  0.98632  | 0.98475 | 0.98553  |
+| 6    | 0.98498  |  0.98118  | 0.98672 | 0.98393  |
+| 7    | 0.98425  |  0.98457  | 0.98161 | 0.98308  |
+| 8    | 0.98285  |  0.98019  | 0.98310 | 0.98164  |
+| 9    | 0.98287  |  0.98331  | 0.97990 | 0.98160  |
+| 10   | 0.98144  |  0.97951  | 0.98071 | 0.98010  |
+| 20   | 0.97828  |  0.97972  | 0.97358 | 0.97663  |
+| 30   | 0.97576  |  0.97930  | 0.96849 | 0.97386  |
+| 40   | 0.97368  |  0.98071  | 0.96252 | 0.97150  |
+| 50   | 0.97277  |  0.98350  | 0.95769 | 0.97041  |
+| 60   | 0.97240  |  0.98400  | 0.95640 | 0.96998  |
+| 70   | 0.97151  |  0.98551  | 0.95290 | 0.96893  |
+| 80   | 0.97093  |  0.98593  | 0.95123 | 0.96827  |
+| 90   | 0.97016  |  0.98618  | 0.94930 | 0.96739  |
+| 100  | 0.96967  |  0.98625  | 0.94817 | 0.96683  |
+
