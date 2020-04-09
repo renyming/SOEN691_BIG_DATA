@@ -116,7 +116,6 @@ def MCNN_predict(rdds):
 
 def main(ssc):
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
-
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
 
