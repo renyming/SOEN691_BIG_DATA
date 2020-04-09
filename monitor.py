@@ -115,14 +115,8 @@ def MCNN_predict(rdds):
     rdds.foreach(lambda x: predict(x))
 
 
-def main(ssc, pool):
+def main(ssc):
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
-
-    # make predictions
-    #predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
-    #predictions_labels.foreachRDD(saveCoord)
-    #predictions_labels.pprint()
-    #pool.pprint()
 
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
@@ -142,5 +136,5 @@ if __name__ == "__main__":
     KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
     init_mcnn_pool('./source_dir/Train_clean.csv', sc)
 
-    main(ssc , KNN_pool)
+    main(ssc)
 

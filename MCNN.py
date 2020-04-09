@@ -54,7 +54,6 @@ def clean_mc_folder():
 
 
 class MC_NN:
-
     def __init__(self, theta, mx):
         self.theta = theta
         self.pool = []  # a list of MC objects
@@ -67,11 +66,8 @@ class MC_NN:
         read all centroid files into a self.pool
         :return:
         '''
-
         mc_files = [f for f in os.listdir(mc_folder) if f.endswith('.csv')]
-
         for file in mc_files:
-
             mc = MC(self.theta)
             if file.__contains__('normal'):
                 mc.cl = 'normal'
@@ -80,7 +76,6 @@ class MC_NN:
 
             with open(join(mc_folder, file), 'r') as f:
                 lines = f.read().splitlines()
-
                 mc.epsilon = int(lines[0])
                 mc.n = int(lines[1])  # count
                 mc.centroid = [float(x) for x in lines[2].split(',') if is_number(x)]
@@ -119,9 +114,7 @@ class MC_NN:
         return min_true_mc
 
     def split_mc(self):
-
         for mc in self.pool:
-
             if mc.epsilon > self.theta:
                 max_index = mc.variance_x.index(max(mc.variance_x))
                 max_variance = mc.variance_x[max_index]
@@ -154,10 +147,8 @@ class MC_NN:
 
     def predict_and_update_mcs(self, instance, true_label):
         # predict
-
         features = [float(attr) for attr in instance if is_number(attr)]
         features_np = np.array(features)
-
         min_distance = float('inf')
         min_mc = None
         for mc in self.pool:
