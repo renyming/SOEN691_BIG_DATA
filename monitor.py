@@ -117,7 +117,6 @@ def MCNN_predict(rdds):
 
 def main(ssc):
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
-
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
 
@@ -125,7 +124,7 @@ def main(ssc):
     ssc.start()
     ssc.awaitTermination()
 
-
+    
 if __name__ == "__main__":
     # spark initialization
     conf = pyspark.SparkConf().setMaster("local[2]")
