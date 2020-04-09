@@ -116,13 +116,9 @@ def MCNN_predict(rdds):
 
 
 def main(ssc, pool):
-    lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
 
-    # make predictions
-    #predictions_labels = lines.map(lambda x: (Knn.KNN(pool, 10, x), x[-1]))
-    #predictions_labels.foreachRDD(saveCoord)
-    #predictions_labels.pprint()
-    #pool.pprint()
+
+    lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
 
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
@@ -130,7 +126,6 @@ def main(ssc, pool):
     # start StreamingContext
     ssc.start()
     ssc.awaitTermination()
-
 
 if __name__ == "__main__":
     # spark initialization
