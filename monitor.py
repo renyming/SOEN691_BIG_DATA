@@ -2,7 +2,6 @@ import pyspark
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import KNN as Knn
 from sklearn import preprocessing
 from sklearn.utils import shuffle
 from pyspark.streaming import StreamingContext
@@ -96,7 +95,7 @@ def data_preprocessing(path):
     df_norm = df_clean
     # plot_data(df_norm, 'after normalizing')
     # shuffle the data then write the clean data to 'Train_clean.csv'
-    df_final = shuffle(df_norm)
+    df_final = shuffle(df_norm, random_state=0)
     df_final.to_csv('./source_dir/Train_clean.csv', index=False, header=False)
 
 
@@ -115,9 +114,7 @@ def MCNN_predict(rdds):
     rdds.foreach(lambda x: predict(x))
 
 
-def main(ssc, pool):
-
-
+def main(ssc):
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
 
     lines.pprint()
@@ -127,6 +124,7 @@ def main(ssc, pool):
     ssc.start()
     ssc.awaitTermination()
 
+
 if __name__ == "__main__":
     # spark initialization
     conf = pyspark.SparkConf().setMaster("local[2]")
@@ -134,8 +132,6 @@ if __name__ == "__main__":
     ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
 
     data_preprocessing('./source_dir/Train.csv')
-    KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
     init_mcnn_pool('./source_dir/Train_clean.csv', sc)
 
-    main(ssc , KNN_pool)
-
+    main(ssc)
