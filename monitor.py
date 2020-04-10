@@ -2,7 +2,6 @@ import pyspark
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import KNN as Knn
 from sklearn import preprocessing
 from sklearn.utils import shuffle
 from pyspark.streaming import StreamingContext
@@ -135,4 +134,3 @@ if __name__ == "__main__":
     init_mcnn_pool('./source_dir/Train_clean.csv', sc)
 
     main(ssc)
-
