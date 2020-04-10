@@ -331,3 +331,19 @@ kNN is difficult to scale up for large dataset. The dataset of this project has 
 Real-time kNN (**TODO: reference to this**) could be also considered as a competitor to compare with MC-NN due to the fact that they are both streaming classification algorithms. 
 
 # Appendix
+
+## Usage
+
+### kNN
+
+- Standalone
+  ```shell
+  python KNN_classical.py
+  ```
+  
+- Compute Canada Cluster
+
+  ```sh
+  sbatch run_job.sh
+  ```
+  
