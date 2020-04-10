@@ -314,6 +314,19 @@ table is shown as below:
 | 90   | 0.97016  |  0.98618  | 0.94930 | 0.96739  |
 | 100  | 0.96967  |  0.98625  | 0.94817 | 0.96683  |
 
+## 2. MC-NN
+
+Unlike the traditional KNN, to evaluate the streaming learning algorithm, we use prequential error. It is the cumulative errors the classifier made over time. The formula is the following S stands for the prequential error.
+
+![](./report_pics/pre-error formula.png)
+
+(reference: https://www.researchgate.net/publication/221653555_Issues_in_evaluation_of_stream_learning_algorithms)
+
+In our classification case, the counts of mis-classification is recorded and we plot the mean of that error counts as our prequential error diagram. The following two graphs show in two cases threshold(θ) = 2 and threshold(θ) = 10 with different data amounts concentration.
+![](./report_pics/mcnn-result-1.png)
+![](./report_pics/mcnn-result-2.png)
+
+As the graphs show, in both cases, the prequential error start at a high level, it is mainly because, the clusters has very few data instances that may lead to high mis-classification. Gradually, the graph starts to decrease and then tend to maintain stable at certain percentage. It is because the number of total clusters are become unchanged at some time thus the graph of ration error become flat.
 # IV. Discussion
 
 ## Comparison of Results
