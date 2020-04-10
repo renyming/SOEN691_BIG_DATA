@@ -230,9 +230,7 @@ with a reasonable running time.
 
 ### 2. Micro-Cluster Nearest Neighbour (MC-NN)
 
-~~(reference: https://spark.apache.org/docs/latest/streaming-programming-guide.html)
-
-Micro Clusters Nearest Neighbour (MC-NN) is a data stream classifier. Data stream by its definition may contain infinite data instances so that MC-NN is applied to the data stream classification for the sake of its fast calculation and update on information.  
+(1). Micro Clusters Nearest Neighbour (MC-NN) is a data stream classifier. Data stream by its definition may contain infinite data instances so that MC-NN is applied to the data stream classification for the sake of its fast calculation and update on information.  
 
 The major idea of MC-NN is to calculate the Euclidean distance between a new data instance to each micro-cluster centroid, then assign the instance to the nearest micro-cluster. If it is correctly classified, then add the instance to the micro-cluster. If misclassified, then first add the instance to the correct micro-cluster, and then increment the error counters both on the nearest micro-cluster and the correct micro-cluster, once one of the micro-clusters’ error counter exceed a predefined threshold, we split the micro-cluster into 2.
 
@@ -262,12 +260,21 @@ else
    end
 end
 ```
-(reference: https://www.sciencedirect.com/science/article/pii/S0167739X17304685)
 
-Implementation details: 
+(2). Implementation details: In order to adapt to the pyspark.streaming library, a Micro-Cluster is saved as a file with some important information, the following table is the summary of the information.
 
+| row number| Content to save | Initial value |
+| :---: | :------: | :-------: |
+| 1 | epsilon (ϵ) | 0 |
+| 2 | Instances counts |  1  |
+| 3 | Centroid |  First random feature  | 
+| 4 | CF_2x  | 0.0 |
+| 5 | Cluster status  | 'activate'  |
+| 6 | File name  | 'normal_mc_1.csv' |
 
-(Remember to mention the difference of distance calculation with kNN)
+The initial centroids is a random data instance with label 'normal' or 'anomaly'. Each time when a new data instance coming with stream batch, epsilon (ϵ), instance counts, Centroid, and CF_2x will be updated respectively, CF_2x is used for the use of split. As long as the epsilon (ϵ) exceeds the threshold(θ), the relative cluster files will be deactivated, and two children cluster spawn and will be used for the future classification.
+
+The predication labels will be saved in other files for the future evaluation. 
 
 # III. Results
 
