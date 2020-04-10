@@ -1,15 +1,21 @@
 # Abstract
 
-Real time network intrusion detection system is a system used to detect anomalous network activities based on streams of network traffic data. It is more flexible and scalable than signature-based intrusion detection system(I am thinking of removing this as i can't find references). In this project, we will simulate network traffic streams by replaying pre-captured network packets feature data at a certain rate. Micro-Cluster Nearest Neighbour (MC-NN) data stream classifier will be used to classify the packet as normal or anomalous traffic. The packet feature data set is labeled, and the detection result will be evaluated against the labels. In addition, MC-NN classifier will be implemented as it is not part of Spark official library. Also, comparative study will be performed between MC-NN and kNN.
-
+As the amount of Data which is received by the Network devices goes beyond the memory constrainsts of Standard monitoring applications using Data Streaming algorithm seems like good stratergy (Cite ).For applications like Detection of Anamoly the system needs to respond quickly. In this project we stimulated the network the network traffic and implemented Data Streaming algorithm MC -NN to classify the network packets as normal or anamoly.We also implemented the KNN (offline) to compare the performance of MC-NN .In the data preperation part we used outlier detector method “IQR ” to elimate the outliers.We compared and analyzed the results of these two algorithms.
 # I. Introduction
 
 ## Context
 
-Anomaly detection is the identification of the rare data instances amongst the majority of the normal data instances. The applications of using the anomaly detection including bank fraud, medical disease detection and network intrusion detection. Real time based anomaly detection over data streams requires the ability to deal with high velocity of data, and dynamically captures the constantly evolving signatures of anomaly data. Real time anomaly detection systems provide better flexibility and scalability than a signature-based systems. 
+As the number of devices which are connected to network increases it leads to opensess, diversity and sharing of knowledge but it also has the scope of many security risks to the network (Cite this).
+Intrusion detecton system is security application which detects attacks and intrusion behavioir  Yin et al. As the types of attacks are becoming complex we need to find creative ways to enhance intrusion detection systems Keegan et al. (2016).
+Anomaly detection is the identification of the rare data instances amongst the majority of the normal data instance
+//TODO 
+Give context for Data Streaming Algorithms
+
+
 ## Objectives
 
-In this project, we are going to develop a simple network monitoring application using real time classifier of data streaming to detect network anomalous traffic. Also, the performances of different real time classifiers will be compared. 
+* In this project, we are going to develop a simple network monitoring application using real time classifier of data streaming to detect network anomalous traffic. Also, the performances of different real time classifiers will be compared. 
+
 ## Presentation of the Problem
 
 Network packets are generated at a massive speed on the network. Without looking at the actual payload of those packets, there are some features of the packet that can be used by the classifier, such as protocol type, service, duration and host details etc. All of those features are numerical values or textual categories. However, those features vary between packets. It’s difficult to capture such a variety of signatures by fixed rules. Thus a real time classifier needs to be used in this case to dynamically identify if a new coming packet is normal or anomalous. Anomalous packets will be dropped to protect the network from suspected intrusion activities. 
