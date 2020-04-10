@@ -70,18 +70,42 @@ kNN is very expensive to compute, since it has to calculate the distance between
 
 ### 2. Micro-Cluster Nearest Neighbour (MC-NN)
 
-(Needs update, kNN is offline now, only need to state the case for MC-NN)
- ~~The main issue about our application is to find a proper data streaming source to imitate the real network environment. Here we used spark streaming library to create the file stream on the dataset. The main purpose of this project is to use different classifiers (kNN and MC-NN) to detect the network anomalies. In this case, we need consistent stream of data to test on the performance of different classifiers. Also spark operations on the streaming will be used to implement the algorithms. The detailed documentation of spark streaming can be found.~~ 
-
-~~If time is sufficient, we will try out different streaming source like kafka or Hadoop Distributed File System.~~
-
 ~~(reference: https://spark.apache.org/docs/latest/streaming-programming-guide.html)
 
-MC-NN is a data stream classifier. It is used to handle data streams and adapts to concept drifts.
+Micro Clusters Nearest Neighbour (MC-NN) is a data stream classifier. Data stream by its definition may contain infinite data instances so that MC-NN is applied to the data stream classification for the sake of its fast calculation and update on information.  
 
-Its basic idea is to calculate the Euclidean distance between a new data instance to each micro-cluster centroid, then assign the instance to the nearest micro-cluster. If it is correctly classified, then add the instance to the micro-cluster. If misclassified, then first add the instance to the correct micro-cluster, and then increment the error counters both on the nearest micro-cluster and the correct micro-cluster, once one of the micro-clusters’ error counter exceed a predefined threshold, we split the micro-cluster into 2.
+The major idea of MC-NN is to calculate the Euclidean distance between a new data instance to each micro-cluster centroid, then assign the instance to the nearest micro-cluster. If it is correctly classified, then add the instance to the micro-cluster. If misclassified, then first add the instance to the correct micro-cluster, and then increment the error counters both on the nearest micro-cluster and the correct micro-cluster, once one of the micro-clusters’ error counter exceed a predefined threshold, we split the micro-cluster into 2.
 
+Here’s the pseudo-code of MC-NN classifier:
+
+```
+foreach Micro-Cluster in LocalSet do:
+  Evalate Micro-Cluster against NewInstance;
+end
+Sort EvaluationDistances();
+if Nearest Micro-Cluster is of the Training Items Class Label then:
+   CorrectClassification Event:
+   NewInstance is added into Nearest Micro-Cluster
+   Nearest Micro-Cluster Error count(ϵ) reduced
+else
+   MisClassification Event:
+   Two Micro-Clusters Identified:
+   1) MC that should have been identified as the Nearest to the New Instance of the
+      Classification Label.
+   2) MC that incorrectly was the Nearest the New Instance.
+      Training item added to the MC of the Correct Classification Label. Both identified
+      Micro-Cluster have internal Error count(ϵ) incremented
+   foreach Micro-Cluster Identified do:
+           if MC's Error count(ϵ) exceeds Error Threshold(θ) then:
+              Sub-Divide Micro-Cluster upon attribute of lagest Variance
+           end
+   end
+end
+```
 (reference: https://www.sciencedirect.com/science/article/pii/S0167739X17304685)
+
+Implementation details: 
+
 
 (Remember to mention the difference of distance calculation with kNN)
 
