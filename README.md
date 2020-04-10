@@ -1,66 +1,39 @@
 # Abstract
 
-Real time network intrusion detection system is a system used to detect 
-anomalous network activities based on streams of network traffic data. 
-It is more flexible and scalable than signature-based intrusion detection 
-system. In this project, we will simulate network traffic streams by replaying 
-pre-captured network packets feature data at a certain rate. Micro-Cluster 
-Nearest Neighbour (MC-NN) data stream classifier will be used to classify the 
-packet as normal or anomalous traffic. The packet feature data set is labeled, 
-and the detection result will be evaluated against the labels. In addition, 
-MC-NN classifier will be implemented as it is not part of Spark official 
-library. Also, comparative study will be performed between MC-NN and kNN.
-
+As the amount of Data which is received by the Network devices goes beyond the memory constrainsts of Standard monitoring applications using Data Streaming algorithm seems like good stratergy (Cite ).For applications like Detection of Anamoly the system needs to respond quickly. In this project we stimulated the network the network traffic and implemented Data Streaming algorithm MC -NN to classify the network packets as normal or anamoly.We also implemented the KNN (offline) to compare the performance of MC-NN .In the data preperation part we used outlier detector method “IQR ” to elimate the outliers.We compared and analyzed the results of these two algorithms.
 
 # I. Introduction
 
 
 ## Context
-Anomaly detection is the identification of the rare data instances amongst the 
-majority of the normal data instances. The applications of using the anomaly 
-detection including bank fraud, medical disease detection and network 
-intrusion detection. Real time based anomaly detection over data streams 
-requires the ability to deal with high velocity of data, and dynamically 
-captures the constantly evolving signatures of anomaly data. Real time anomaly 
-detection systems provide better flexibility and scalability than a 
-signature-based systems. 
+
+As the number of devices which are connected to network increases it leads to opensess, diversity and sharing of knowledge but it also has the scope of many security risks to the network (Cite this).
+Intrusion detecton system is security application which detects attacks and intrusion behavioir  Yin et al. As the types of attacks are becoming complex we need to find creative ways to enhance intrusion detection systems Keegan et al. (2016).
+Anomaly detection is the identification of the rare data instances amongst the majority of the normal data instance
+//TODO 
+Give context for Data Streaming Algorithms
+
 
 ## Objectives
-In this project, we are going to develop a simple network monitoring 
-application using real time classifier of data streaming to detect network 
-anomalous traffic. Also, the performances of different real time classifiers 
-will be compared. 
+
+* In this project, we are going to develop a simple network monitoring application using real time classifier of data streaming to detect network anomalous traffic. Also, the performances of different real time classifiers will be compared. 
 
 ## Presentation of the Problem
-Network packets are generated at a massive speed on the network. Without 
-looking at the actual payload of those packets, there are some features of the
-packet that can be used by the classifier, such as protocol type, service, 
-duration and host details etc. All of those features are numerical values or 
-textual categories. However, those features vary between packets. 
-It’s difficult to capture such a variety of signatures by fixed rules. 
-Thus a real time classifier needs to be used in this case to dynamically 
-identify if a new coming packet is normal or anomalous. Anomalous packets will 
-be dropped to protect the network from suspected intrusion activities. 
+Network packets are generated at a massive speed on the network. Without looking at the actual payload of those packets, there are some features of the packet that can be used by the classifier, such as protocol type, service, duration and host details etc. All of those features are numerical values or textual categories. However, those features vary between packets. It’s difficult to capture such a variety of signatures by fixed rules. Thus a real time classifier needs to be used in this case to dynamically identify if a new coming packet is normal or anomalous. Anomalous packets will be dropped to protect the network from suspected intrusion activities. 
 
 ## Related Work
-* Implementation of MC-NN
 
-    MC-NN is not part of the Spark library. Thus in this project we will 
-    implement MC-NN classifier.
+* N. C. N. Chu, A. Williams, R. Alhajj and K. Barker, "Data stream mining architecture for network intrusion detection," Proceedings of the 2004 IEEE International Conference on Information Reuse and Integration, 2004. IRI 2004., Las Vegas, NV, 2004, pp. 363-368.
+
+* Yin, C., Xia, L., Zhang, S. et al. Improved clustering algorithm based on high-speed network data stream. Soft Comput 22, 4185–4195 (2018). https://doi.org/10.1007/s00500-017-2708-2
+* Silva, J. A., Faria, E. R., Barros, R. C., Hruschka, E. R., de Carvalho, A. C. P. L. F., and Gama, J. 2013. Data
+stream clustering: A survey. ACM Comput. Surv. 46, 1, Article 13 (October 2013), 31 pages.
+DOI: http://dx.doi.org/10.1145/2522968.2522981
   
-* Implementation of real time kNN
-
-    The kNN in Spark is not designed for real time classification. 
-    Time window will be added to kNN to enable real time classification 
-    ability.
-  
-* Comparison between MC-NN and real time kNN
-
-    The performance of MC-CNN will be compared with that of real time kNN.
+* Sang-Hyun Oh, Jin-Suk Kang, Yung-Cheol Byun, Gyung-Leen Park and Sang-Yong Byun, "Intrusion detection based on clustering a data stream," Third ACIS Int'l Conference on Software Engineering Research, Management and Applications (SERA'05), Mount Pleasant, MI, USA, 2005, pp. 220-227.
 
 
 # II. Materials and Methods
-
 
 ## Dataset
 
@@ -257,33 +230,42 @@ with a reasonable running time.
 
 ### 2. Micro-Cluster Nearest Neighbour (MC-NN)
 
-(Needs update, kNN is offline now, only need to state the case for MC-NN)
- ~~The main issue about our application is to find a proper data streaming 
- source to imitate the real network environment. Here we used spark streaming 
- library to create the file stream on the dataset. The main purpose of this 
- project is to use different classifiers (kNN and MC-NN) to detect the network 
- anomalies. In this case, we need consistent stream of data to test on the 
- performance of different classifiers. Also spark operations on the streaming 
- will be used to implement the algorithms. The detailed documentation of spark 
- streaming can be found.~~ 
-
-~~If time is sufficient, we will try out different streaming source like kafka 
-or Hadoop Distributed File System.~~
-
 ~~(reference: https://spark.apache.org/docs/latest/streaming-programming-guide.html)
 
-MC-NN is a data stream classifier. It is used to handle data streams and adapts 
-to concept drifts.
+Micro Clusters Nearest Neighbour (MC-NN) is a data stream classifier. Data stream by its definition may contain infinite data instances so that MC-NN is applied to the data stream classification for the sake of its fast calculation and update on information.  
 
-Its basic idea is to calculate the Euclidean distance between a new data instance 
-to each micro-cluster centroid, then assign the instance to the nearest micro-cluster. 
-If it is correctly classified, then add the instance to the micro-cluster. 
-If misclassified, then first add the instance to the correct micro-cluster, 
-and then increment the error counters both on the nearest micro-cluster and the 
-correct micro-cluster, once one of the micro-clusters’ error counter exceed a 
-predefined threshold, we split the micro-cluster into 2.
+The major idea of MC-NN is to calculate the Euclidean distance between a new data instance to each micro-cluster centroid, then assign the instance to the nearest micro-cluster. If it is correctly classified, then add the instance to the micro-cluster. If misclassified, then first add the instance to the correct micro-cluster, and then increment the error counters both on the nearest micro-cluster and the correct micro-cluster, once one of the micro-clusters’ error counter exceed a predefined threshold, we split the micro-cluster into 2.
 
+Here’s the pseudo-code of MC-NN classifier:
+
+```
+foreach Micro-Cluster in LocalSet do:
+  Evalate Micro-Cluster against NewInstance;
+end
+Sort EvaluationDistances();
+if Nearest Micro-Cluster is of the Training Items Class Label then:
+   CorrectClassification Event:
+   NewInstance is added into Nearest Micro-Cluster
+   Nearest Micro-Cluster Error count(ϵ) reduced
+else
+   MisClassification Event:
+   Two Micro-Clusters Identified:
+   1) MC that should have been identified as the Nearest to the New Instance of the
+      Classification Label.
+   2) MC that incorrectly was the Nearest the New Instance.
+      Training item added to the MC of the Correct Classification Label. Both identified
+      Micro-Cluster have internal Error count(ϵ) incremented
+   foreach Micro-Cluster Identified do:
+           if MC's Error count(ϵ) exceeds Error Threshold(θ) then:
+              Sub-Divide Micro-Cluster upon attribute of lagest Variance
+           end
+   end
+end
+```
 (reference: https://www.sciencedirect.com/science/article/pii/S0167739X17304685)
+
+Implementation details: 
+
 
 (Remember to mention the difference of distance calculation with kNN)
 
