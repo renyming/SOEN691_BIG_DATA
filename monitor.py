@@ -117,7 +117,6 @@ def MCNN_predict(rdds):
 
 def main(ssc):
     lines = ssc.textFileStream("./input_dir").map(lambda x:list(reader(StringIO(x)))[0])
-
     lines.pprint()
     lines.foreachRDD(MCNN_predict)
 
@@ -133,7 +132,6 @@ if __name__ == "__main__":
     ssc = StreamingContext(sc, 1)  # Streaming will execute in each 3 seconds
 
     data_preprocessing('./source_dir/Train.csv')
-    KNN_pool = Knn.init_KNN('./source_dir/Train.csv', sc, 100)
     init_mcnn_pool('./source_dir/Train_clean.csv', sc)
 
     main(ssc)
