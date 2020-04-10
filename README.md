@@ -1,7 +1,9 @@
 # Abstract
 
 As the amount of Data which is received by the Network devices goes beyond the memory constrainsts of Standard monitoring applications using Data Streaming algorithm seems like good stratergy (Cite ).For applications like Detection of Anamoly the system needs to respond quickly. In this project we stimulated the network the network traffic and implemented Data Streaming algorithm MC -NN to classify the network packets as normal or anamoly.We also implemented the KNN (offline) to compare the performance of MC-NN .In the data preperation part we used outlier detector method “IQR ” to elimate the outliers.We compared and analyzed the results of these two algorithms.
+
 # I. Introduction
+
 
 ## Context
 
@@ -17,8 +19,8 @@ Give context for Data Streaming Algorithms
 * In this project, we are going to develop a simple network monitoring application using real time classifier of data streaming to detect network anomalous traffic. Also, the performances of different real time classifiers will be compared. 
 
 ## Presentation of the Problem
-
 Network packets are generated at a massive speed on the network. Without looking at the actual payload of those packets, there are some features of the packet that can be used by the classifier, such as protocol type, service, duration and host details etc. All of those features are numerical values or textual categories. However, those features vary between packets. It’s difficult to capture such a variety of signatures by fixed rules. Thus a real time classifier needs to be used in this case to dynamically identify if a new coming packet is normal or anomalous. Anomalous packets will be dropped to protect the network from suspected intrusion activities. 
+
 ## Related Work
 
 * N. C. N. Chu, A. Williams, R. Alhajj and K. Barker, "Data stream mining architecture for network intrusion detection," Proceedings of the 2004 IEEE International Conference on Information Reuse and Integration, 2004. IRI 2004., Las Vegas, NV, 2004, pp. 363-368.
@@ -30,23 +32,168 @@ DOI: http://dx.doi.org/10.1145/2522968.2522981
   
 * Sang-Hyun Oh, Jin-Suk Kang, Yung-Cheol Byun, Gyung-Leen Park and Sang-Yong Byun, "Intrusion detection based on clustering a data stream," Third ACIS Int'l Conference on Software Engineering Research, Management and Applications (SERA'05), Mount Pleasant, MI, USA, 2005, pp. 220-227.
 
+
 # II. Materials and Methods
 
 ## Dataset
 
-The dataset was created in a military network environment.They created a LAN network which is typical in the US Air Force and they attacked in multiple ways and collected the TCP/IP dump. Each connection is a TCP packet which has a starting time ,ending time for Source IP address and target IP address. They have used three protocols TCP ,UDP and ICMP. The connection is labeled as normal or abnormal.
+### 1. Background
+The dataset consists of a variety of network intrusion simulated data in a 
+military network environment. It contains 25192 rows of TCP/IP connection 
+data. Each connection is a TCP packet which contains 42 columns. There is no 
+NULL or EMPTY values in original dataset, while it does have outliers which we 
+will eliminate during data preprocessing step.
 
-The dataset has 25192 rows and 42 columns. The dataset is clean. We don’t have any NULL or EMPTY values. It has 11743 rows which are classified as anomaly and the rest 13449 classified as normal. We think we will mostly use 20 columns as the other columns have zero values. We are planning on combining different columns and see which combination gives better results.Based on the initial assessment  the columns we think  are important for the classification are class, srv_error_rate, error_rate, dst_host_error_rate and dst_host_srv_rerror_rate. We are a little bit unsure about the meaning of some of the columns in the dataset. We are researching these columns to get more information.
+### 2. Dataset analysis
+In the original dataset, feature types are described as below:
 
-(reference: https://www.kaggle.com/sampadab17/network-intrusion-detection)
+<table>
+    <thead>
+        <tr>
+          <th> Data type </th>
+          <th> Number </th>
+          <th> Columns </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td> qualitative (string) </td>
+            <td> 4 </td>
+            <td> protocol, service, flag, target </td>
+        </tr>
+        <tr>
+            <td> quantitative (int/float) </td>
+            <td> 38 </td>
+            <td> duration, land, urgent, etc... </td>
+        </tr>
+    </tbody>
+</table>
+
+#### (1) Class labels:
+
+<table>
+    <thead>
+        <tr>
+          <th> </th>
+          <th colspan=2> Original dataset </th>
+          <th colspan=2> Preprocessed dataset </th>
+        </tr>
+        <tr>
+            <th> </th>
+            <th> Target </th>
+            <th> Rows </th>
+            <th> Target </th>
+            <th> Rows </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td> Positive Class </td>
+            <td> Anomaly </td>
+            <td> 11743 </td>
+            <td> Anomaly </td>
+            <td> 11708 </td>
+        </tr>
+        <tr>
+            <td> Negative Class </td>
+            <td> Normal </td>
+            <td> 13449 </td>
+            <td> Normal </td>
+            <td> 13404 </td>
+        </tr>
+        <tr>
+            <td> Total </td>
+            <td> </td>
+            <td> 25912 </td>
+            <td> </td>
+            <td> 25112 </td>
+        </tr>
+    </tbody>
+</table>
+
+#### (2) Correlations:
+
+We analyzed the original dataset and the preprocessed dataset and 
+plot their correlations between features. Here is the result.
+
+|     Original dataset          | Preprocessed dataset          |     
+| ----------------------------- | ----------------------------- | 
+| <img src="report_pics/correlations-train.png"  width="130%"> | <img src="report_pics/correlations-train-clean.png"  width="130%"> | 
+
+<i>(the plots were generated by the code in [dataset_analysis.py](./dataset_analysis.py), references 
+are mentioned inside the file. The result also ensures that preprocessing step does not change the 
+correlations much.) </i>
+
+### 3. Data preprocessing
+#### (1) Outlier detection and filtering:
+We used an outlier detection method which is called “IQR method” developed by 
+John Tukey only on the 38 quantitative type columns. The IQR method and a result 
+is briefly described below.
+
+* IQR method introduction:
+
+IQR indicates interquartile range. It is a measure of the dispersion similar 
+to 2 different quantiles of the data. Tukey who developed this method considered
+any data point that falls either <i>below 1.5 times the IQR of the first 
+quartile</i> or <i>above 1.5 times the IQR of the third quartile</i> to be “outliers”. 
+
+During our preprocessing step, we consider data where <i>1.5 times its IQR score 
+is below the <img src="https://render.githubusercontent.com/render/math?math=0.1^{th}"> 
+quantile</i> or <i>1.5 times its IQR score is above 
+<img src="https://render.githubusercontent.com/render/math?math=99.9^{th}"> quantile</i> 
+to be outliers, because outliers in our original dataset is not numerous.
+
+(reference: http://colingorrie.github.io/outlier-detection.html) <br/>
+(reference: https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/box-whisker-plots/a/identifying-outliers-iqr-rule)
+
+* Result:
+
+We take an example as a result shown below, where the horizontal feature 
+indicates “src_bytes” meaning how many bytes does the source sends, and the 
+vertical feature indicates “dst_bytes” meaning how many bytes does the 
+destination receives.
+
+|       before outlier filtering      |        after outlier filtering       | 
+| ----------------------------------- | ------------------------------------ |
+| ![before](./report_pics/before-filtering.png) | ![after](./report_pics/filtering.png) |
+
+* Advantages of outlier filtering:
+
+During our experiments, outlier detection helps MC-NN model a lot. Before filtering, 
+the MC-NN model (theta=2, mx=25) performed 82.959% on F1-score, while after 
+filtering, the best model (same theta and mx) performed 89.272% on F1-score.
+
+The behind reason we analyzed is: outlier detection and filtering avoid the model 
+to split a parent micro cluster to accommodate extrema in the dataset. 
+So micro clusters only split when necessary, which increases the overall accuracy.
+
+#### (2) Feature normalization:
+We transformed values on the 38 quantitative columns to the range between 0 and 1, 
+so that the model won’t be biased towards any feature.
+
+We show a result below on the feature “duration”.
+
+|         before normalizing          |           after normalizing          | 
+| ----------------------------------- | ------------------------------------ |
+| <img src="./report_pics/before-norm.png" width="80%">  | <img src="./report_pics/normalize.png" width="80%"> |
+
+
+### 4. Dataset Source
+https://www.kaggle.com/sampadab17/network-intrusion-detection
+
 
 ## Technologies and Algorithms
 
-Spark was used to implement kNN and MC-NN algorithms and simulate streaming data in this project.
+Spark was used to implement kNN and MC-NN algorithms and simulate streaming 
+data in this project.
 
 ### 1.  k Nearest Neighbours (kNN)
 
-kNN is a supervised machine learning model used for classification and regression. It is widely used in data analytics. kNN algorithm hinges on the assumption that similar samples locate in close proximity in the feature space. The model picks the k nearest samples in the feature space then predicts the new samples based on the majority vote of those k samples.
+kNN is a supervised machine learning model used for classification and 
+regression. It is widely used in data analytics. kNN algorithm hinges on the 
+assumption that similar samples locate in close proximity in the feature space. 
+The model picks the k nearest samples in the feature space then predicts the 
+new samples based on the majority vote of those k samples.
 
 Here’s the pseudo-code of kNN algorithm:
 
@@ -60,13 +207,26 @@ for each testing instance
 
 (reference: Lecture_slides: Supervised Classification)
 
-In order to provide the baseline for MC-NN performance comparison, kNN was applied to the entire dataset offline. Since there is one hyperparameter k (the number of nearest neighbours) in kNN, cross-validation was used to search for the optimized value of k. The whole dataset was randomly split into 5 folds. 1/5 was used as training, which is around 5,000 data samples, 4/5 were used for test. 
+In order to provide the baseline for MC-NN performance comparison, kNN was 
+applied to the entire dataset offline. Since there is one hyperparameter k 
+(the number of nearest neighbours) in kNN, cross-validation was used to search 
+for the optimized value of k. The whole dataset was randomly split into 5 folds. 
+1/5 was used as training, which is around 5,000 data samples, 4/5 were used 
+for test. 
 
-The range of k been search is [3, 9] with the increment of 1, [10, 100] with the increment of 10. 
+The range of k been search is [3, 9] with the increment of 1, [10, 100] with 
+the increment of 10. 
 
-As for the distance calculation, squared difference was used for numerical features. Categorical feature distance was considered as 1 for different category values. 
+As for the distance calculation, squared difference was used for numerical 
+features. Categorical feature distance was considered as 1 for different 
+category values. 
 
-kNN is very expensive to compute, since it has to calculate the distance between one testing instance with every sample (there are more than 5,000 samples in this case). It is infeasible to run the spark job with single node. But thanks to Dr. Tristan Glatard’s sponsorship, we were able to perform the kNN evaluation on [Compute Canada](https://www.computecanada.ca/)'s cluster with a reasonable running time.
+kNN is very expensive to compute, since it has to calculate the distance 
+between one testing instance with every sample (there are more than 5,000 
+samples in this case). It is infeasible to run the spark job with single node. 
+But thanks to Dr. Tristan Glatard’s sponsorship, we were able to perform the 
+kNN evaluation on [Compute Canada](https://www.computecanada.ca/)'s cluster 
+with a reasonable running time.
 
 ### 2. Micro-Cluster Nearest Neighbour (MC-NN)
 
@@ -113,13 +273,20 @@ Implementation details:
 
 ## 1. kNN
 
-For each k, the averaged accuracy, precision, recall and F1-score were calculated from 5 iterations, and plotted as below:
+For each k, the averaged accuracy, precision, recall and F1-score were calculated 
+from 5 iterations, and plotted as below:
 
 ![](./report_pics/kNN_results.png)
 
-In general, kNN obtained very good results on the dataset, all metrics are above 0.94. However, it runs very slowly. The running time for one iteration was around 6 minutes even using 32 CPU cores. 
+In general, kNN obtained very good results on the dataset, all metrics are 
+above 0.94. However, it runs very slowly. The running time for one iteration 
+was around 6 minutes even using 32 CPU cores. 
 
-As shown in the plot, accuracy, recall and F1-score all decrease as k increases. However, precision first shows a fluctuant decrease and then bounces back when k=10. The best overall performance appears when K=3, where the accuracy, precision and F1-score are the highest and recall is the third highest. A detailed results table is shown as below:
+As shown in the plot, accuracy, recall and F1-score all decrease as k increases. 
+However, precision first shows a fluctuant decrease and then bounces back when k=10. 
+The best overall performance appears when K=3, where the accuracy, precision and 
+F1-score are the highest and recall is the third highest. A detailed results 
+table is shown as below:
 
 | k    | Accuracy | Precision | Recall  | F1-score |
 | ---- | :------: | :-------: | :-----: | :------: |

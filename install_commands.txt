@@ -1,9 +1,8 @@
 1. install sklearn:
-
 conda install -c anaconda scikit-learn
 
-
 2. install matplotlib:
-
 conda install -c conda-forge matplotlib
 
+3. install seanborn:
+conda install -c anaconda seaborn
