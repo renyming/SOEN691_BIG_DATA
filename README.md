@@ -326,6 +326,12 @@ Overall, kNN outperforms MC-NN on this dataset. We think the main reason is that
 
 kNN is difficult to scale up for large dataset. The dataset of this project has around 25,000 instances, with a 20% training set ratio, it took around 6 mins to run one single iteration with 32 CPU cores on high-performance cluster. And this running time was obtained after several optimizations: better RDD persistent strategy and sorting with heap of size k.
 
+* MC-NN limitation and possible solution
+
+In the MC-NN model, we didn’t consider the 3 categorical features (protocol, service, flag) while calculating distance and updating centroids. The reason is that we need to store all the points in every micro cluster if we consider the three, and that dramatically drags down the streaming speed since more lines are written while updating centroids. In addition, it makes more difficult while splitting micro clusters.
+
+One possible solution is that: when every data point comes, we append the 3 categorical features into 3 lines in the centroid file which the point belongs to. Every time when updating centroid, we select the most dominant category on the 3 categorical features to represent the micro cluster. However, this also has a limitation when splitting a micro cluster, so we did not use this solution in our model.
+
 ## Future Work
 
 Real-time kNN (**TODO: reference to this**) could be also considered as a competitor to compare with MC-NN due to the fact that they are both streaming classification algorithms. 
@@ -333,6 +339,10 @@ Real-time kNN (**TODO: reference to this**) could be also considered as a compet
 # Appendix
 
 ## Usage
+
+### Prerequisite packages
+Package install commands are written in the file ```install_commands.txt```. Those packages are necessary in our experiments.
+
 
 ### kNN
 
@@ -346,4 +356,24 @@ Real-time kNN (**TODO: reference to this**) could be also considered as a compet
   ```sh
   sbatch run_job.sh
   ```
-  
+ 
+### Procedures to run MC-NN
+##### 1. Use the command ```python3 monitor.py``` on console 1. This will:
+    * Operate data preprocessing mentioned above and save the preprocessed data to the file “source_dir/Train_clean.csv”.
+    * Start the monitor which is going to listen to the changes under the folder “input_dir”.
+    
+This is what the console 1 outputs after running the command.
+
+<img src="./report_pics/mcnn-run-1.png" width="60%">
+
+##### 2. Use the command ```python3 stream.py``` on another console 2 to streaming the file “source_dir/Train_clean.csv” and saving partitions under the folder where the monitor is listening.
+    * Centroid files will be updating under the folder “mcnn_mcs/”.
+    * Predictions will be written to the file “mcnn_pred/mcnn_predictions.csv”.
+    * Each partition in the stream will be printed on the console.
+
+This is what the console 1 outputs after running the command.
+
+<img src="./report_pics/mcnn-run-2.png" width="60%">
+
+##### 3. Run ```python3 mcnnevl.py``` after “monitor.py” has processed all partitions in the stream. Performances (accuracy, precision, recall, f1-score) and plots (prequential error) will be generated as shown in section III. Results  2. MC-NN.
+
