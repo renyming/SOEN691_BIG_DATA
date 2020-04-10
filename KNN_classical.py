@@ -62,7 +62,8 @@ if __name__ == '__main__':
         train_list[n].persist()
         test_list[n].persist()
 
-    k_range = range(3, 11)
+    k_range = range(3, 10)
+    #k_range = range(10, 110, 10)
 
     for k in k_range:
         output_to_file("========================================================\n")
