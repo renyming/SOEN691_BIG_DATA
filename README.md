@@ -263,7 +263,7 @@ The predication labels will be saved in other files for the future evaluation.
 For each k, the averaged accuracy, precision, recall and F1-score were calculated 
 from 5 iterations, and plotted as below:
 
-![](./report_pics/kNN_results.png)
+<img src="./report_pics/kNN_results.png" width="60%">
 
 In general, kNN obtained very good results on the dataset, all metrics are 
 above 0.94. However, it runs very slowly. The running time for one iteration 
@@ -334,7 +334,12 @@ One possible solution is that: when every data point comes, we append the 3 cate
 
 ## Future Work
 
-Real-time kNN (**TODO: reference to this**) could be also considered as a competitor to compare with MC-NN due to the fact that they are both streaming classification algorithms. 
+The dataset used in this project has only around 25,000 labelled instances. If a larger dataset could be found, it would be interesting to see if MC-NN could have a better performance.
+
+Real-time kNN could be also considered as a classifier to compare with MC-NN due to the fact that they are both streaming classification algorithms. 
+
+(Real-time kNN: Tennant, Mark, et al. “Towards a Parallel Computationally Efficient Approach to Scaling Up Data Stream Classification.” SpringerLink, Springer, Cham, 9 Dec. 2014, link.springer.com/chapter/10.1007/978-3-319-12069-0_4.)
+
 ## References
 
 * Pham, D., Venkatesh, S., Lazarescu, M. et al. Anomaly detection in large-scale data stream networks. Data Min Knowl Disc 28, 145–189 (2014). https://doi.org/10.1007/s10618-012-0297-3
