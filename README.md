@@ -309,6 +309,7 @@ Unlike the traditional KNN, to evaluate the streaming learning algorithm, we use
 (reference: https://www.researchgate.net/publication/221653555_Issues_in_evaluation_of_stream_learning_algorithms)
 
 In our classification case, the counts of mis-classification is recorded and we plot the mean of that error counts as our prequential error diagram. The following two graphs show in two cases threshold(θ) = 2 and threshold(θ) = 10 with different data amounts concentration.
+
 ![](./report_pics/mcnn-result-1.png)
 ![](./report_pics/mcnn-result-2.png)
 
