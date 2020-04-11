@@ -140,16 +140,6 @@ destination receives.
 | ----------------------------------- | ------------------------------------ |
 | ![before](./report_pics/before-filtering.png) | ![after](./report_pics/filtering.png) |
 
-* Advantages of outlier filtering:
-
-During our experiments, outlier detection helps MC-NN model a lot. Before filtering, 
-the MC-NN model (theta=2, mx=25) performed 82.959% on F1-score, while after 
-filtering, the best model (same theta and mx) performed 89.272% on F1-score.
-
-The behind reason we analyzed is: outlier detection and filtering avoid the model 
-to split a parent micro cluster to accommodate extrema in the dataset. 
-So micro clusters only split when necessary, which increases the overall accuracy.
-
 #### (2) Feature normalization:
 We transformed values on the 38 quantitative columns to the range between 0 and 1, 
 so that the model won’t be biased towards any feature.
@@ -160,6 +150,15 @@ We show a result below on the feature “duration”.
 | ----------------------------------- | ------------------------------------ |
 | <img src="./report_pics/before-norm.png" width="80%">  | <img src="./report_pics/normalize.png" width="80%"> |
 
+* Advantages of outlier filtering and normalization:
+
+During our experiments, outlier filtering and normalization help MC-NN model a lot. 
+Before preprocessing, the MC-NN model (theta=2, mx=25) performed 82.959% on F1-score, 
+while after preprocessing, the best model (same theta and mx) performed 89.272% on F1-score.
+
+The behind reason we analyzed is: they avoid the model to split a parent micro cluster 
+to accommodate extrema in the dataset. So micro clusters only split when necessary, 
+which increases the overall accuracy.
 
 ### 4. Dataset Source
 https://www.kaggle.com/sampadab17/network-intrusion-detection
