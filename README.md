@@ -338,7 +338,7 @@ The dataset used in this project has only around 25,000 labelled instances. If a
 
 Real-time kNN could be also considered as a classifier to compare with MC-NN due to the fact that they are both streaming classification algorithms. 
 
-(Real-time kNN: Tennant, Mark, et al. “Towards a Parallel Computationally Efficient Approach to Scaling Up Data Stream Classification.” SpringerLink, Springer, Cham, 9 Dec. 2014, link.springer.com/chapter/10.1007/978-3-319-12069-0_4.)
+(Real-time kNN: Tennant, Mark, et al. “Towards a Parallel Computationally Efficient Approach to Scaling Up Data Stream Classification.” SpringerLink, Springer, Cham, 9 Dec. 2014, https://link.springer.com/chapter/10.1007/978-3-319-12069-0_4.)
 
 ## References
 
