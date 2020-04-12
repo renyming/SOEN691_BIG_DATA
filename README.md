@@ -1,24 +1,21 @@
 # Abstract
+Intrusion detection technology is a proactive way to monitor attacks in the network. As the amount of data which is received by the network goes beyond the memory constraints of standard monitoring applications using Data Streaming algorithm seems like good strategy Pham et al. (2014). In this project we stimulated the network traffic and implemented Data Streaming algorithm Micro Cluster Nearest Neighbor (MC -NN) to classify the network packets as normal or anomaly. We also implemented the KNN (offline) to compare the performance of MC-NN. In the data preparation part, we used outlier detector method “IQR” to eliminate the outliers. We compared and analyzed the results of these two algorithms. 
 
-Intrusion detection technology is a proactive way to monitor attacks in the network but as the amount of data which is received by the network goes beyond the memory constraints of standard monitoring applications using Data Streaming algorithm seems like good stratergy Pham et al.(2014). In this project we stimulated the network traffic and implemented Data Streaming algorithm Micro Cluster Nearest Neighbour (MC -NN) to classify the network packets as normal or anomaly. We also implemented the KNN (offline) to compare the performance of MC-NN.In the data preperation part we used outlier detector method “IQR ” to elimate the outliers. We compared and analyzed the results of these two algorithms.
 # I. Introduction
 
 
 ## Context
 
-As the number of devices which are connected to network increases it leads to openness, diversity and sharing of knowledge but it also has the scope for many security risks to the network. Since the types of attacks are becoming complex we need to find creative ways to enhance intrusion detection systems Keegan et al. (2016). One of the major hurdles of large scale network intrusion detection is the processing and analyzing vast amount of  heterogeneous data. Many Machine learning algorithms have been applied to this problem but they treat this problem as offline problem where we  train the model once and then apply to incoming traffic M. Ahmed et al (2016)
-
+As the number of devices which are connected to network increases it leads to openness, diversity and sharing of knowledge but it also has the scope for many security risks. As the types of attacks are becoming complex we need to find creative ways to enhance intrusion detection systems Keegan et al. (2016). One of the major hurdles of large-scale network intrusion detection is the processing and analyzing vast amount of heterogeneous data. Many Machine learning algorithms have been applied to this problem but they treat this problem as offline problem where they train the model once and then deploy to incoming traffic M. Ahmed et al (2016) 
 ## Presentation of the Problem
-The problem we are considering in this project is how to detect anomaly online i.e without training the model offline when dealing with large amount of data. As the problem is classification we looked at K- Nearest Neighbour(KNN) . The major issue with KNN is that it doesn’t scale well for large data  so we looked at the parralliezable version of KNN i.e  Micro-Cluster Nearest Neighbour (MC-NN)
-
+The problem we are considering in this project is how to make detect anomaly online (i.e without training the model offline) when dealing with large amount of data. As the problem is classification we looked at K- Nearest Neighbor (KNN) . The major issue with KNN is that it doesn’t scale well for large data so we looked at the scalable version of KNN i.e. Micro-Cluster Nearest Neighbor (MC-NN) 
 ## Objectives
 
 The main objective of our project is to implement Micro-Cluster Nearest Neighbour (MC-NN) data stream classifier . We use the traditional KNN as the baseline to evaluate the performance of  MC-NN.
 
 ## Related Work
 
-There is a large body of literature that deal with Anomaly detection . We restricted our research to application of Machine Learning techniques to  Network detection. The most commonly used Machine learning techniques are Neural Network , clustering based  and rule based  V. Chandola,  (2009). Based on traditional  FP- Tree  Giannella et,al proposed FP- Stream algorithm. Oh et,al proposed clustering on data streams in 2005. Recently  Carela-Español proposed Hoeffding Adaptive Trees to evaluate data stream classification.
-
+There is a large body of literature that deal with Anomaly detection. We restricted our research to application of Machine Learning techniques to Network detection problem. The most commonly used Machine learning techniques are Neural Network, clustering based and rule-based V. Chandola, (2009). In Data Streaming domain Giannella et al proposed FP- Stream based on FP- Tree algorithm. Oh et al proposed clustering on data streams in 2005. Recently Carela-Español proposed Hoeffding Adaptive Trees to evaluate data stream classification. 
 # II. Materials and Methods
 
 ## Dataset
@@ -124,10 +121,9 @@ any data point that falls either <i>below 1.5 times the IQR of the first
 quartile</i> or <i>above 1.5 times the IQR of the third quartile</i> to be “outliers”. 
 
 During our preprocessing step, we consider data where <i>1.5 times its IQR score 
-is below the <img src="https://render.githubusercontent.com/render/math?math=0.1^{th}"> 
-quantile</i> or <i>1.5 times its IQR score is above 
-<img src="https://render.githubusercontent.com/render/math?math=99.9^{th}"> quantile</i> 
-to be outliers, because outliers in our original dataset is not numerous.
+is below the 0.1<sup>th</sup> quantile</i> or <i>1.5 times its IQR score is 
+above 99.9<sup>th</sup> quantile</i> to be outliers, because outliers in our original 
+dataset is not numerous.
 
 (reference: http://colingorrie.github.io/outlier-detection.html) <br/>
 (reference: https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/box-whisker-plots/a/identifying-outliers-iqr-rule)
@@ -143,16 +139,6 @@ destination receives.
 | ----------------------------------- | ------------------------------------ |
 | ![before](./report_pics/before-filtering.png) | ![after](./report_pics/filtering.png) |
 
-* Advantages of outlier filtering:
-
-During our experiments, outlier detection helps MC-NN model a lot. Before filtering, 
-the MC-NN model (theta=2, mx=25) performed 82.959% on F1-score, while after 
-filtering, the best model (same theta and mx) performed 89.272% on F1-score.
-
-The behind reason we analyzed is: outlier detection and filtering avoid the model 
-to split a parent micro cluster to accommodate extrema in the dataset. 
-So micro clusters only split when necessary, which increases the overall accuracy.
-
 #### (2) Feature normalization:
 We transformed values on the 38 quantitative columns to the range between 0 and 1, 
 so that the model won’t be biased towards any feature.
@@ -163,6 +149,15 @@ We show a result below on the feature “duration”.
 | ----------------------------------- | ------------------------------------ |
 | <img src="./report_pics/before-norm.png" width="80%">  | <img src="./report_pics/normalize.png" width="80%"> |
 
+* Advantages of outlier filtering and normalization:
+
+During our experiments, outlier filtering and normalization help MC-NN model a lot. 
+Before preprocessing, the MC-NN model (theta=2, mx=25) performed 82.959% on F1-score, 
+while after preprocessing, the best model (same theta and mx) performed 89.272% on F1-score.
+
+The behind reason we analyzed is: they avoid the model to split a parent micro cluster 
+to accommodate extrema in the dataset. So micro clusters only split when necessary, 
+which increases the overall accuracy.
 
 ### 4. Dataset Source
 https://www.kaggle.com/sampadab17/network-intrusion-detection
@@ -269,7 +264,7 @@ The predication labels will be saved in other files for the future evaluation.
 For each k, the averaged accuracy, precision, recall and F1-score were calculated 
 from 5 iterations, and plotted as below:
 
-![](./report_pics/kNN_results.png)
+<img src="./report_pics/kNN_results.png" width="60%">
 
 In general, kNN obtained very good results on the dataset, all metrics are 
 above 0.94. However, it runs very slowly. The running time for one iteration 
@@ -334,23 +329,37 @@ Overall, kNN outperforms MC-NN on this dataset. We think the main reason is that
 
 kNN is difficult to scale up for large dataset. The dataset of this project has around 25,000 instances, with a 20% training set ratio, it took around 6 mins to run one single iteration with 32 CPU cores on high-performance cluster. And this running time was obtained after several optimizations: better RDD persistent strategy and sorting with heap of size k.
 
-* MC-NN limitation and possible solution
-
 In the MC-NN model, we didn’t consider the 3 categorical features (protocol, service, flag) while calculating distance and updating centroids. The reason is that we need to store all the points in every micro cluster if we consider the three, and that dramatically drags down the streaming speed since more lines are written while updating centroids. In addition, it makes more difficult while splitting micro clusters.
 
 One possible solution is that: when every data point comes, we append the 3 categorical features into 3 lines in the centroid file which the point belongs to. Every time when updating centroid, we select the most dominant category on the 3 categorical features to represent the micro cluster. However, this also has a limitation when splitting a micro cluster, so we did not use this solution in our model.
 
 ## Future Work
 
-Real-time kNN (**TODO: reference to this**) could be also considered as a competitor to compare with MC-NN due to the fact that they are both streaming classification algorithms. 
+The dataset used in this project has only around 25,000 labelled instances. If a larger dataset could be found, it would be interesting to see if MC-NN could have a better performance.
+
+Real-time kNN could be also considered as a classifier to compare with MC-NN due to the fact that they are both streaming classification algorithms. 
+
+(Real-time kNN: Tennant, Mark, et al. “Towards a Parallel Computationally Efficient Approach to Scaling Up Data Stream Classification.” SpringerLink, Springer, Cham, 9 Dec. 2014, https://link.springer.com/chapter/10.1007/978-3-319-12069-0_4.)
+
+## References
+
+* Pham, D., Venkatesh, S., Lazarescu, M. et al. Anomaly detection in large-scale data stream networks. Data Min Knowl Disc 28, 145–189 (2014). https://doi.org/10.1007/s10618-012-0297-3
+
+* Yin, C., Xia, L., Zhang, S. et al. Improved clustering algorithm based on high-speed network data stream. Soft Comput 22, 4185–4195 (2018). https://doi.org/10.1007/s00500-017-2708-2
+
+* Keegan, N., Ji, S., Chaudhary, A. et al. A survey of cloud-based network intrusion detection analysis. Hum. Cent. Comput. Inf. Sci. 6, 19 (2016). https://doi.org/10.1186/s13673-016-0076-z
+* Mulinka, P., & Casas, P. (2018, August). Stream-based machine learning for network security and anomaly detection. In Proceedings of the 2018 Workshop on Big Data Analytics and Machine Learning for Data Communication Networks (pp. 1-7).
+* M. Ahmed, A. Naser Mahmood, and J. Hu, “A survey of network anomaly detection techniques,” J. Netw. Comput. Appl., vol. 60, no. C, pp. 19–31, Jan. 2016
+* V. Carela-Español, P. Barlet-Ros, A. Bifet, and K. Fukuda, “A streaming flow based technique for traffic classification applied to 12+ 1 years of internet traffic,” Telecommunication Systems, vol. 63, no. 2, pp. 191–204, 2016.
+* V. Chandola, A. Banerjee, and V. Kumar, “Anomaly detection: A survey,” ACM Comput. Surv., vol. 41, no. 3, pp. 15:1–15:58, Jul. 2009
+
 
 # Appendix
 
-## Usage
-
-### Prerequisite packages
+## Prerequisite packages
 Package install commands are written in the file ```install_commands.txt```. Those packages are necessary in our experiments.
 
+## Usage
 
 ### kNN
 
@@ -365,8 +374,8 @@ Package install commands are written in the file ```install_commands.txt```. Tho
   sbatch run_job.sh
   ```
  
-### Procedures to run MC-NN
-##### 1. Use the command ```python3 monitor.py``` on console 1. This will:
+### Run MC-NN
+#### 1. Use the command ```python3 monitor.py``` on console 1. This will:
     * Operate data preprocessing mentioned above and save the preprocessed data to the file “source_dir/Train_clean.csv”.
     * Start the monitor which is going to listen to the changes under the folder “input_dir”.
     
@@ -374,7 +383,7 @@ This is what the console 1 outputs after running the command.
 
 <img src="./report_pics/mcnn-run-1.png" width="60%">
 
-##### 2. Use the command ```python3 stream.py``` on another console 2 to streaming the file “source_dir/Train_clean.csv” and saving partitions under the folder where the monitor is listening.
+#### 2. Use the command ```python3 stream.py``` on another console 2 to streaming the file “source_dir/Train_clean.csv” and saving partitions under the folder where the monitor is listening.
     * Centroid files will be updating under the folder “mcnn_mcs/”.
     * Predictions will be written to the file “mcnn_pred/mcnn_predictions.csv”.
     * Each partition in the stream will be printed on the console.
@@ -383,5 +392,7 @@ This is what the console 1 outputs after running the command.
 
 <img src="./report_pics/mcnn-run-2.png" width="60%">
 
-##### 3. Run ```python3 mcnnevl.py``` after “monitor.py” has processed all partitions in the stream. Performances (accuracy, precision, recall, f1-score) and plots (prequential error) will be generated as shown in section III. Results  2. MC-NN.
+#### 3. Run ```python3 mcnnevl.py``` after “monitor.py” has processed all partitions in the stream. 
+
+Performances (accuracy, precision, recall, f1-score) and plots (prequential error) will be generated as shown in section III. Results  2. MC-NN.
 
