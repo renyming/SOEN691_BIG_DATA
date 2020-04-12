@@ -365,19 +365,6 @@ Real-time kNN could be also considered as a classifier to compare with MC-NN due
 
 (Real-time kNN: Tennant, Mark, et al. “Towards a Parallel Computationally Efficient Approach to Scaling Up Data Stream Classification.” SpringerLink, Springer, Cham, 9 Dec. 2014, https://link.springer.com/chapter/10.1007/978-3-319-12069-0_4.)
 
-## References
-
-* Pham, D., Venkatesh, S., Lazarescu, M. et al. Anomaly detection in large-scale data stream networks. Data Min Knowl Disc 28, 145–189 (2014). https://doi.org/10.1007/s10618-012-0297-3
-
-* Yin, C., Xia, L., Zhang, S. et al. Improved clustering algorithm based on high-speed network data stream. Soft Comput 22, 4185–4195 (2018). https://doi.org/10.1007/s00500-017-2708-2
-
-* Keegan, N., Ji, S., Chaudhary, A. et al. A survey of cloud-based network intrusion detection analysis. Hum. Cent. Comput. Inf. Sci. 6, 19 (2016). https://doi.org/10.1186/s13673-016-0076-z
-* Mulinka, P., & Casas, P. (2018, August). Stream-based machine learning for network security and anomaly detection. In Proceedings of the 2018 Workshop on Big Data Analytics and Machine Learning for Data Communication Networks (pp. 1-7).
-* M. Ahmed, A. Naser Mahmood, and J. Hu, “A survey of network anomaly detection techniques,” J. Netw. Comput. Appl., vol. 60, no. C, pp. 19–31, Jan. 2016
-* V. Carela-Español, P. Barlet-Ros, A. Bifet, and K. Fukuda, “A streaming flow based technique for traffic classification applied to 12+ 1 years of internet traffic,” Telecommunication Systems, vol. 63, no. 2, pp. 191–204, 2016.
-* V. Chandola, A. Banerjee, and V. Kumar, “Anomaly detection: A survey,” ACM Comput. Surv., vol. 41, no. 3, pp. 15:1–15:58, Jul. 2009
-
-
 # Appendix
 
 ## Prerequisite packages
