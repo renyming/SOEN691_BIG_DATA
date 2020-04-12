@@ -245,6 +245,7 @@ else
    end
 end
 ```
+(reference: https://www.sciencedirect.com/science/article/pii/S0167739X17304685)
 
 (2). Implementation details: In order to adapt to the pyspark.streaming library, a Micro-Cluster is saved as a file with some important information, the following table is the summary of the information.
 
@@ -304,7 +305,7 @@ table is shown as below:
 
 Unlike the traditional KNN, to evaluate the streaming learning algorithm, we use prequential error. It is the cumulative errors the classifier made over time. The formula is the following S stands for the prequential error.
 
-![](./report_pics/pre-error formula.png)
+![](./report_pics/pre-error-formula.png)
 
 (reference: https://www.researchgate.net/publication/221653555_Issues_in_evaluation_of_stream_learning_algorithms)
 

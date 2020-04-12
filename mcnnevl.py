@@ -35,7 +35,7 @@ def mcnn_eval():
 def mcnn_prequential_error_plot_():
 
     headers = ['error_count', 'n_count', 'prequential_error']
-    df = pd.read_csv('./mcnn_pred/mcnn_predictions.csv', names=headers)
+    df = pd.read_csv('./mcnn_pred/mcnn_prequential_error.csv', names=headers)
 
     x = df['n_count']
     y = df['prequential_error']
@@ -50,11 +50,11 @@ def mcnn_prequential_error_plot_():
     plt.gcf().autofmt_xdate()
     plt.show()
 
-def mcnn_prequential_error_multi_plot_():
+def mcnn_prequential_error_multi_plot():
 
     headers = ['error_count', 'n_count', 'prequential_error']
-    df1 = pd.read_csv('./mcnn_pred/2-3000.csv', names=headers)
-    df2 = pd.read_csv('./mcnn_pred/10-3000.csv', names=headers)
+    df1 = pd.read_csv('./mcnn_pred/mx=2.csv', names=headers)
+    df2 = pd.read_csv('./mcnn_pred/mx=10.csv', names=headers)
 
     x1 = df1['n_count']
     x2 = df2['n_count']
@@ -72,4 +72,4 @@ def mcnn_prequential_error_multi_plot_():
     plt.gcf().autofmt_xdate()
     plt.show()
 
-mcnn_prequential_error_plot_()
+mcnn_prequential_error_multi_plot()
