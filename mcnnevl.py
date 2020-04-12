@@ -53,8 +53,8 @@ def mcnn_prequential_error_plot_():
 def mcnn_prequential_error_multi_plot():
 
     headers = ['error_count', 'n_count', 'prequential_error']
-    df1 = pd.read_csv('./mcnn_pred/theta = 2 - 3000.csv', names=headers)
-    df2 = pd.read_csv('./mcnn_pred/theta = 10 - 3000.csv', names=headers)
+    df1 = pd.read_csv('./mcnn_pred/theta = 2.csv', names=headers)
+    df2 = pd.read_csv('./mcnn_pred/theta = 10.csv', names=headers)
 
     x1 = df1['n_count']
     x2 = df2['n_count']
