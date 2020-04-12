@@ -1,12 +1,18 @@
 # Abstract
-Intrusion detection technology is a proactive way to monitor attacks in the network. As the amount of data which is received by the network goes beyond the memory constraints of standard monitoring applications using Data Streaming algorithm seems like good strategy Pham et al. (2014). In this project we stimulated the network traffic and implemented Data Streaming algorithm Micro Cluster Nearest Neighbor (MC -NN) to classify the network packets as normal or anomaly. We also implemented the KNN (offline) to compare the performance of MC-NN. In the data preparation part, we used outlier detector method “IQR” to eliminate the outliers. We compared and analyzed the results of these two algorithms. 
+Intrusion detection technology is a proactive way to monitor attacks in the network. As the amount of data which is received by the network goes beyond the memory constraints of standard monitoring applications using Data Streaming algorithm seems like good strategy. In this project we stimulated the network traffic and implemented Data Streaming algorithm Micro Cluster Nearest Neighbor (MC -NN) to classify the network packets as normal or anomaly. We also implemented the KNN (offline) to compare the performance of MC-NN. In the data preparation part, we used outlier detector method “IQR” to eliminate the outliers. We compared and analyzed the results of these two algorithms.
+
+(reference: Pham, D., Venkatesh, S., Lazarescu, M. et al. Anomaly detection in large-scale data stream networks. Data Min Knowl Disc 28, 145–189 (2014). https://doi.org/10.1007/s10618-012-0297-3) 
 
 # I. Introduction
 
-
 ## Context
 
-As the number of devices which are connected to network increases it leads to openness, diversity and sharing of knowledge but it also has the scope for many security risks. As the types of attacks are becoming complex we need to find creative ways to enhance intrusion detection systems Keegan et al. (2016). One of the major hurdles of large-scale network intrusion detection is the processing and analyzing vast amount of heterogeneous data. Many Machine learning algorithms have been applied to this problem but they treat this problem as offline problem where they train the model once and then deploy to incoming traffic M. Ahmed et al (2016) 
+As the number of devices which are connected to network increases it leads to openness, diversity and sharing of knowledge but it also has the scope for many security risks. As the types of attacks are becoming complex we need to find creative ways to enhance intrusion detection systems . One of the major hurdles of large-scale network intrusion detection is the processing and analyzing vast amount of heterogeneous data. Many Machine learning algorithms have been applied to this problem but they treat this problem as offline problem where they train the model once and then deploy to incoming traffic.
+
+(reference : Keegan, N., Ji, S., Chaudhary, A. et al. A survey of cloud-based network intrusion detection analysis. Hum. Cent. Comput. Inf. Sci. 6, 19 (2016). https://doi.org/10.1186/s13673-016-0076-z)
+
+(reference : M. Ahmed, A. Naser Mahmood, and J. Hu, “A survey of network anomaly detection techniques,” J. Netw. Comput. Appl., vol. 60, no. C, pp. 19–31, Jan. 2016)
+
 ## Presentation of the Problem
 The problem we are considering in this project is how to make detect anomaly online (i.e without training the model offline) when dealing with large amount of data. As the problem is classification we looked at K- Nearest Neighbor (KNN) . The major issue with KNN is that it doesn’t scale well for large data so we looked at the scalable version of KNN i.e. Micro-Cluster Nearest Neighbor (MC-NN) 
 ## Objectives
@@ -15,7 +21,15 @@ The main objective of our project is to implement Micro-Cluster Nearest Neighbou
 
 ## Related Work
 
-There is a large body of literature that deal with Anomaly detection. We restricted our research to application of Machine Learning techniques to Network detection problem. The most commonly used Machine learning techniques are Neural Network, clustering based and rule-based V. Chandola, (2009). In Data Streaming domain Giannella et al proposed FP- Stream based on FP- Tree algorithm. Oh et al proposed clustering on data streams in 2005. Recently Carela-Español proposed Hoeffding Adaptive Trees to evaluate data stream classification. 
+There is a large body of literature that deal with Anomaly detection. We restricted our research to application of Machine Learning techniques to Network detection problem. The most commonly used Machine learning techniques are Neural Network, clustering based and rule-based  In Data Streaming domain Giannella et al proposed FP- Stream based on FP- Tree algorithm. Oh et al proposed clustering on data streams in 2005. Recently Carela-Español proposed Hoeffding Adaptive Trees to evaluate data stream classification.The most recent paper from  Mark Tennant et al implements MC-NN  In this paper they compare the performance of MC-NN with other classifiers. The table below shows the results of various classifiers and accuracy in terms of SEA and Random Tree data streams 
+
+![](./report_pics/mcnn-table.png)
+
+(reference : V. Chandola, A. Banerjee, and V. Kumar, “Anomaly detection: A survey,” ACM Comput. Surv., vol. 41, no. 3, pp. 15:1–15:58, Jul. 2009)
+
+(reference : Tennant, Mark & Stahl, Frederic & Gomes, João. (2015). Fast Adaptive Real-Time Classification for Data Streams with Concept Drift. 265-272. 10.1007/978-3-319-23237-9_23. )
+
+(reference : V. Carela-Español, P. Barlet-Ros, A. Bifet, and K. Fukuda, “A streaming flow based technique for traffic classification applied to 12+ 1 years of internet traffic,” Telecommunication Systems, vol. 63, no. 2, pp. 191–204, 2016.)
 # II. Materials and Methods
 
 ## Dataset
