@@ -212,7 +212,7 @@ kNN evaluation on [Compute Canada](https://www.computecanada.ca/)'s cluster with
 
 (1). Micro Clusters Nearest Neighbour (MC-NN) is a data stream classifier. Data stream by its definition may contain infinite data instances so that MC-NN is applied to the data stream classification for the sake of its fast calculation and update on information.  
 
-The major idea of MC-NN is to calculate the Euclidean distance between a new data instance to each micro-cluster centroid, then assign the instance to the nearest micro-cluster. If it is correctly classified, then add the instance to the micro-cluster. If misclassified, then first add the instance to the correct micro-cluster, and then increment the error counters both on the nearest micro-cluster and the correct micro-cluster, once one of the micro-clusters’ error counter exceed a predefined threshold, we split the micro-cluster into 2.
+The major idea of MC-NN is to calculate the squared difference as the kNN used between a new data instance to each micro-cluster centroid, then assign the instance to the nearest micro-cluster. If it is correctly classified, then add the instance to the micro-cluster. If misclassified, then first add the instance to the correct micro-cluster, and then increment the error counters both on the nearest micro-cluster and the correct micro-cluster, once one of the micro-clusters’ error counter exceed a predefined threshold, we split the micro-cluster into 2.
 
 Here’s the pseudo-code of MC-NN classifier:
 
@@ -253,7 +253,11 @@ end
 | 5 | Cluster status  | 'activate'  |
 | 6 | File name  | 'normal_mc_1.csv' |
 
-The initial centroids is a random data instance with label 'normal' or 'anomaly'. Each time when a new data instance coming with stream batch, epsilon (ϵ), instance counts, Centroid, and CF_2x will be updated respectively, CF_2x is used for the use of split. As long as the epsilon (ϵ) exceeds the threshold(θ), the relative cluster files will be deactivated, and two children cluster spawn and will be used for the future classification.
+The initial centroids is a random data instance with label 'normal' or 'anomaly'. Each time when a new data instance coming with stream batch, epsilon (ϵ), instance counts, Centroid, and CF_2x will be updated respectively, CF_2x is used to calculate the variance for the split. As long as the epsilon (ϵ) exceeds the threshold(θ), the relative cluster files will be deactivated, and two children cluster spawn and will be used for the future classification. The formula to obtain the variance is as followed:
+
+![](./report_pics/variance.png)
+
+For the split, first the largest variance feature is determined, and two children clusters are created inherited all the information despite the largest feature + or - the variance.
 
 The predication labels will be saved in other files for the future evaluation. 
 
@@ -298,18 +302,24 @@ table is shown as below:
 
 ## 2. MC-NN
 
-Unlike the traditional KNN, to evaluate the streaming learning algorithm, we use prequential error. It is the cumulative errors the classifier made over time. The formula is the following S stands for the prequential error.
+Unlike the traditional KNN, to evaluate the streaming learning algorithm, we use prequential error. It is the cumulative errors the classifier made over time. The reason to apply prequential error is that the classification model is changing overtime so that the prequential error helps to indicate the accumulate error counts the entire data stream made. The formula is the following S stands for the prequential error.
 
 ![](./report_pics/pre-error-formula.png)
 
+And we obtain the following graphs using the mean prequential error 
+
+mean_prequential_errors = S / n.
+
 (reference: https://www.researchgate.net/publication/221653555_Issues_in_evaluation_of_stream_learning_algorithms)
 
-In our classification case, the counts of mis-classification is recorded and we plot the mean of that error counts as our prequential error diagram. The following two graphs show in two cases threshold(θ) = 2 and threshold(θ) = 10 with different data amounts concentration.
+In our classification case, the counts of mis-classification is recorded and we plot the mean of that error counts as our prequential error diagram. The following two graphs show in two cases threshold(θ) = 2 and threshold(θ) = 10 with different data amounts.
 
-![](./report_pics/mcnn-result-1.png)
-![](./report_pics/mcnn-result-2.png)
+|       data counts = 25000     |        data counts = 3000       |
+| ----------------------------------- | ------------------------------------ |
+| ![](./report_pics/mcnn-result-1.png)| ![](./report_pics/mcnn-result-2.png) |
 
-As the graphs show, in both cases, the prequential error start at a high level, it is mainly because, the clusters has very few data instances that may lead to high mis-classification. Gradually, the graph starts to decrease and then tend to maintain stable at certain percentage. It is because the number of total clusters are become unchanged at some time thus the graph of ration error become flat.
+As the graphs show, in both cases, the prequential error start at a high level, it is mainly because, the clusters has very few data instances that may lead to high mis-classification. Gradually, the graph starts to decrease and then tend to maintain stable at certain percentage. It is because the number of total clusters are become unchanged at some time thus the graph of ration error become flat. Also low theta value show better results than the high theta value, means that each micro-clusters with low theta has low-tolerance to the errors and more willing to split.
+
 # IV. Discussion
 
 ## Comparison of Results
