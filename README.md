@@ -340,12 +340,12 @@ As the graphs show, in both cases, the prequential error start at a high level, 
 
 The best results of kNN and MC-NN are listed as below:
 
-|           | kNN (k = 3) | MC-NN (theta = 2) |
+|           | kNN (k = 3) | MC-NN (theta = 2, mx = 25) |
 | --------- | :---------: | :---------------: |
-| Accuracy  |   0.98809   |      0.89131      |
-| Precision |   0.98811   |      0.82569      |
-| Recall    |   0.98634   |      0.97161      |
-| F1-score  |   0.98722   |      0.89272      |
+| Accuracy  |   0.98809   |      0.89268      |
+| Precision |   0.98811   |      0.82906      |
+| Recall    |   0.98634   |      0.96976      |
+| F1-score  |   0.98722   |      0.89391      |
 
 Overall, kNN outperforms MC-NN on this dataset. We think the main reason is that kNN has the full picture of the entire dataset (more than 5,000 randomly sampled training samples) since the beginning of classification, while MC-NN only gradually accumulates such knowledge. The other reason is in MC-NN the already-seen data is represented by cluster centroids instead of actual data samples. The trade-off of the excellent performance of kNN is its long running time.
 
