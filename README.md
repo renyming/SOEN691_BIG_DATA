@@ -332,7 +332,7 @@ In our classification case, the counts of mis-classification is recorded and we 
 | ----------------------------------- | ------------------------------------ |
 | ![](./report_pics/mcnn-result-1.png)| ![](./report_pics/mcnn-result-2.png) |
 
-As the graphs show, in both cases, the prequential error start at a high level, it is mainly because, the clusters has very few data instances that may lead to high mis-classification. Gradually, the graph starts to decrease and then tend to maintain stable at certain percentage. It is because the number of total clusters are become unchanged at some time thus the graph of ration error become flat. Also low theta value show better results than the high theta value, means that each micro-clusters with low theta has low-tolerance to the errors and more willing to split.
+As the graphs show, in both cases, the prequential error start at a high level, it is mainly because, the clusters has very few data instances that may lead to high mis-classification. Gradually, the graph starts to decrease and then tend to maintain stable at certain percentage. It is because the number of total clusters are become unchanged at some time thus the graph of ration error become flat. Also in this experiments, we test with low theta value = 2 and high theta value = 10, as the results shows theta = 10 shows better performance regard to the prequential error, it is main because of the choice of the initial centroids, however theta set to low value may have better result theoretically because low theta value may have low tolerance to the successive error made by the classifiers, our group may put this experiments to the future work due to the time limitation. 
 
 # IV. Discussion
 
@@ -363,7 +363,11 @@ The dataset used in this project has only around 25,000 labelled instances. If a
 
 Real-time kNN could be also considered as a classifier to compare with MC-NN due to the fact that they are both streaming classification algorithms. 
 
+As mentioned in the MC-NN result section, different initial centroids can be experimented to compare the different parameters.
+
 (Real-time kNN: Tennant, Mark, et al. “Towards a Parallel Computationally Efficient Approach to Scaling Up Data Stream Classification.” SpringerLink, Springer, Cham, 9 Dec. 2014, https://link.springer.com/chapter/10.1007/978-3-319-12069-0_4.)
+
+
 
 # Appendix
 
@@ -406,4 +410,6 @@ This is what the console 1 outputs after running the command.
 #### 3. Run ```python3 mcnnevl.py``` after “monitor.py” has processed all partitions in the stream. 
 
 Performances (accuracy, precision, recall, f1-score) and plots (prequential error) will be generated as shown in section III. Results  2. MC-NN.
+
+To obtain the prequential error graphs, "mcnn_prequential_error.csv" will be generated automatically during the streaming, run "mcnn_prequential_error_plot_" function will help to generate the graph, in addition, to compare the prequential errors with different parameter, using "mcnn_prequential_error_multi_plot" function with file name "theta = 2.csv" and 'theta = 10.csv' by default and can be modified by the users' needs.
 
